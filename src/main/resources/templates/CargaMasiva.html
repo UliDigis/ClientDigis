@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+    <head>
+        <title>Carga Masiva</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container my-5" layout:fragment="contenido">
+
+            <h2 class="mb-5 text-center text-primary fw-bold">
+                <i class="bi bi-cloud-upload me-2"></i>Carga Masiva de Datos
+            </h2>
+            <div class="card shadow-lg mx-auto" style="max-width: 550px;">
+                <div class="card-body p-4 p-md-5">
+                    <p class="text-muted mb-4 text-center">Seleccione el tipo de archivo para cargar:</p>
+
+                    <div class="row mb-4 g-3">
+                        <div class="col-sm-6">
+                            <button id="btnTxt" class="btn btn-outline-dark btn-lg w-100" data-mime=".txt">
+                                <i class="bi bi-filetype-txt me-2"></i>TXT
+                            </button>
+                        </div>
+                        <div class="col-sm-6">
+                            <button id="btnXlsx" class="btn btn-outline-success btn-lg w-100" data-mime=".xlsx,.xls">
+                                <i class="bi bi-filetype-xlsx me-2"></i>XLSX
+                            </button>
+                        </div>
+                    </div>
+
+                    <hr class="mb-4">
+
+                    <div id="formularioArchivo" style="display: none;">
+                        <form th:action="@{/Usuario/CargaMasiva}" method="post" enctype="multipart/form-data">
+                            <label for="archivo" class="form-label fw-bold mb-3" id="lblArchivo">Subir archivo:</label>
+                            <input type="file" id="archivo" name="archivo" class="form-control form-control-lg mb-4" accept=".txt,.xlsx" required>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100" id="cargaMasiva">
+                                <i class="bi bi-upload me-2"></i>Subir y Pre-validar
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Si hay errores -->
+                    <div th:if="${listaErrores != null and !#lists.isEmpty(listaErrores)}" class="mt-4">
+                        <div class="alert alert-danger shadow" role="alert">
+                            <h4 class="alert-heading d-flex align-items-center">
+                                <i class="bi bi-x-octagon-fill me-2"></i> Lista de Errores
+                            </h4>
+                            <hr>
+                            <ul class="mb-0">
+                                <li th:each="error : ${listaErrores}" 
+                                    th:text="'Línea ' + ${error.linea} + 
+                                    ' | Campo: ' + ${error.campo} + 
+                                    ' → ' + ${error.descripcion}"></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Si NO hay errores -->
+                    <div th:if="${sinErrores}" class="mt-4 text-center">
+                        <p class="lead text-success">Archivo prevalidado sin errores.</p>
+                        <a class="btn btn-success btn-lg shadow" th:href="@{/Usuario/CargaMasiva/Procesando}">
+                            <i class="bi bi-database-fill-up me-2"></i>Procesar Carga
+                        </a>
+                        <a class="btn btn-danger btn-lg shadow" th:href="@{/Usuario/CargaMasiva}">
+                            <i class="bi bi-x-circle me-2"></i>Cancelar Carga
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+            <script th:if="${errorMessage}" th:inline="javascript">
+                Swal.fire({
+                title:  "¡Carga Fallida!",
+                        icon: "error",
+                        text: [[${errorMessage}]],
+                        confirmButtonText: "Entiendo"
+                });</script>
+
+            <script th:if="${successMessage}" th:inline="javascript">
+                Swal.fire({
+                title: "Operación Exitosa",
+                        icon: "success",
+                        text: [[${successMessage}]],
+                        confirmButtonText: "Ok"
+                });
+            </script>
+        </div>
+
+
+    </body>
+    <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                let tipoArchivo = "";
+
+                const btnTxt = document.getElementById("btnTxt");
+                const btnXlsx = document.getElementById("btnXlsx");
+                const formularioArchivo = document.getElementById("formularioArchivo");
+                const archivo = document.getElementById("archivo");
+                const cargaMasiva = document.getElementById("cargaMasiva");
+
+                
+                function resetBotonesSeleccion(activo) {
+                     btnTxt.classList.remove("btn-secondary", "btn-dark");
+                    btnXlsx.classList.remove("btn-success");
+
+                   btnTxt.classList.remove("btn-outline-dark");
+                    btnXlsx.classList.remove("btn-outline-success");
+
+
+                    if (activo === 'txt') {
+                       btnTxt.classList.add("btn-secondary");
+                        btnXlsx.classList.add("btn-outline-success");
+                    } else if (activo === 'xlsx') {
+                        btnXlsx.classList.add("btn-success");
+                        btnTxt.classList.add("btn-outline-dark");
+                    }
+                }
+
+                btnTxt.addEventListener("click", function () {
+                    tipoArchivo = "txt";
+
+                    formularioArchivo.style.display = "block";
+                    archivo.setAttribute("accept", ".txt");
+
+                    resetBotonesSeleccion('txt');
+
+                    cargaMasiva.classList.remove("btn-success", "btn-primary");
+                    cargaMasiva.classList.add("btn-secondary"); // GRIS
+                    cargaMasiva.innerHTML = '<i class="bi bi-upload me-2"></i>Subir TXT';
+                });
+
+                btnXlsx.addEventListener("click", function () {
+                    tipoArchivo = "xlsx";
+
+                    formularioArchivo.style.display = "block";
+                    archivo.setAttribute("accept", ".xlsx,.xls");
+
+                    resetBotonesSeleccion('xlsx');
+
+                    cargaMasiva.classList.remove("btn-secondary", "btn-primary");
+                    cargaMasiva.classList.add("btn-success"); // VERDE
+                    cargaMasiva.innerHTML = '<i class="bi bi-upload me-2"></i>Subir XLSX';
+                });
+
+                archivo.addEventListener("change", function () {
+                    if (this.files.length > 0) {
+                        const fileName = this.files[0].name;
+                        const fileExtension = fileName.split('.').pop().toLowerCase();
+
+                        if (tipoArchivo === 'xlsx') {
+                            if (fileExtension !== 'xlsx' && fileExtension !== 'xls') {
+                                alert("Por favor, selecciona un archivo XLSX válido.");
+                                this.value = "";
+                            }
+                        } else if (fileExtension !== tipoArchivo) {
+                            alert("Por favor, selecciona un archivo " + tipoArchivo.toUpperCase() + " válido.");
+                            this.value = "";
+                        }
+                    }
+                });
+            });
+        </script>
+        
+
+</html>

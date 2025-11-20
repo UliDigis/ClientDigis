@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+    <head>
+        <title>Ingresar Nuevo Usuario</title>
+    </head>
+    <body class="bg-light">
+
+        <div class="container my-5" layout:fragment="contenido">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white text-center p-3 rounded-top">
+                    <h3 class="mb-0"><i class="bi bi-person-plus-fill me-2"></i>Registro de Nuevo Usuario</h3>
+                </div>
+
+                <div class="card-body p-4">
+                    <form th:object="${Usuario}" th:action="@{add}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+
+
+                        <h5 class="mb-3 text-secondary"><i class="bi bi-key-fill me-2"></i>Datos de Cuenta</h5>
+                        <div class="row mb-4 g-3">
+                            <div class="col-lg-3 col-md-4">
+                                <label for="imagenFiel" class="form-label">Imagen de Perfil</label>
+                                <input class="form-control" type="file" id="imagenFiel" name="imagenFiel" accept="image/*">
+                                <small class="text-muted">Max. 2MB, formatos JPG/PNG.</small>
+                            </div>
+                            <div class="col-lg-3 col-md-4">
+                                <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" th:field="*{UserName}" required placeholder="Nombre de usuario único">
+                            </div>
+                            <div class="col-lg-3 col-md-4">
+                                <label for="email" class="form-label">Correo Electrónico <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" th:field="*{Email}" required placeholder="ejemplo@correo.com">
+                            </div>
+                            <div class="col-lg-3 col-md-12">
+                                <label for="password" class="form-label">Contraseña <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" th:field="*{Password}" required placeholder="Mínimo 8 caracteres">
+                            </div>
+                        </div>
+
+                        <hr>
+
+
+                        <h5 class="mb-3 text-secondary"><i class="bi bi-person-badge-fill me-2"></i>Información Personal</h5>
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-4">
+                                <label for="nombre" class="form-label">Nombre <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="nombre" th:field="*{Nombre}" required placeholder="Tu nombre(s)">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="apellidoPaterno" class="form-label">Apellido Paterno <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="apellidoPaterno" th:field="*{ApellidoPaterno}" required placeholder="Apellido Paterno">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="apellidoMaterno" class="form-label">Apellido Materno</label>
+                                <input type="text" class="form-control" id="apellidoMaterno" th:field="*{ApellidoMaterno}" placeholder="Apellido Materno (Opcional)">
+                            </div>
+                        </div>
+
+                        <div class="row mb-4 g-3">
+                            <div class="col-md-4">
+                                <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="fechaNacimiento" th:field="*{FechaNacimiento}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="sexo" class="form-label">Sexo</label>
+                                <select class="form-select" id="sexo" th:field="*{Sexo}">
+                                    <option value="" disabled selected th:if="${Usuario.Sexo == null}">Seleccione...</option>
+                                    <option value="M">Masculino</option>
+                                    <option value="F">Femenino</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="curp" class="form-label">CURP <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control text-uppercase" id="curp" maxlength="18" th:field="*{CURP}" required placeholder="18 caracteres">
+                            </div>
+                        </div>
+
+                        <hr>
+
+
+                        <h5 class="mb-3 text-secondary"><i class="bi bi-phone-vibrate-fill me-2"></i>Información de Contacto</h5>
+                        <div class="row mb-5 g-3">
+                            <div class="col-md-4">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input type="tel" class="form-control" id="telefono" maxlength="10" th:field="*{Telefono}" placeholder="Ej: 5551234567">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="celular" class="form-label">Celular</label>
+                                <input type="tel" class="form-control" id="celular" maxlength="10" th:field="*{Celular}" placeholder="Ej: 5587654321">
+                            </div>
+                            <div class="col-md-3 col-sm-4">
+                                <label for="pNombreRol" class="form-label">Rol</label>
+                                <select class="form-select" id="pNombreRol" th:field="*{Rol.idRol}">
+                                    <option value="0" selected>Selecciona un Rol</option>
+                                    <option th:each="rol : ${roles}" th:value="${rol.idRol}" th:text="${rol.nombre}"></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr>
+
+
+                        <hr>
+                        <h5 class="mb-3 text-secondary"><i class="bi bi-geo-alt-fill me-2"></i>Dirección</h5>
+
+                        <div class="row mb-4 g-4">
+                            <div class="col-md-3">
+                                <label for="calle" class="form-label">Calle</label>
+                                <input type="text" class="form-control" id="calle" th:field="*{Direcciones[0].Calle}" name="calle" placeholder="Nombre de la calle">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="numeroExterior" class="form-label">Número Exterior</label>
+                                <input type="text" class="form-control" th:field="*{Direcciones[0].NumeroExterior}" id="numeroExterior" name="numeroExterior" placeholder="Ej: 45">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="numeroInterior" class="form-label">Número Interior</label>
+                                <input type="text" class="form-control" th:field="*{Direcciones[0].NumeroInterior}" id="numeroInterior" name="numeroInterior" placeholder="Ej: B">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">País</label>
+                                <select id="ddlPais" class="form-select" th:field="*{Direcciones[0].Colonia.Municipio.Estado.Pais.IdPais}" >
+                                    <option value=0 selected>Selecciona algun Pais</option>
+                                    <option th:each="pais : ${Paises}" th:value="${pais.IdPais}" th:text="${pais.Nombre}"></option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="row mb-4 g-3">
+
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                <select id="ddlEstado" th:field ="*{Direcciones[0].Colonia.Municipio.Estado.IdEstado}" class="form-select">
+                                    <option value=0 selected>Selecciona algun Estado</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Municipio</label>
+                                <select id="ddlMunicipio" th:field ="*{Direcciones[0].Colonia.Municipio.IdMunicipio}" class="form-select">
+                                    <option value=0 selected>Selecciona algun Municipio</option>
+                                </select></div>
+
+
+                            <div class="col-md-3">
+                                <label for="colonia" class="form-label">Colonia</label>
+                                <select class="form-select" th:field ="*{Direcciones[0].Colonia.IdColonia}" id="ddlColonia">
+                                    <option value="0" selected>Seleccione una Colonia</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="CodigoPostal" class="form-label">Codigo Postal</label>
+                                <select class="form-select" th:field ="*{Direcciones[0].Colonia.CodigoPostal}" id="ddlCodigoPostal">
+                                    <option value="0" selected>Seleccione un Codigo Postal</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+
+                        <div class="text-center pt-3 border-top">
+                            <button type="submit" class="btn btn-success btn-lg px-5 shadow-sm">
+                                <i class="bi bi-check-circle-fill me-2"></i>Registrar Usuario
+                            </button>
+                            <button type="reset" class="btn btn-secondary btn-lg px-5 ms-3 shadow-sm">
+                                <i class="bi bi-x-circle-fill me-2"></i>Limpiar Campos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </body>
+    <script>
+
+            //Ajax = herramienta para realizar consultas al servidor (de forma asincrona desde el cliente)
+            //Jquery = Biblioteca de JS que permite reducir sitaxis de JS y permite usar herramientas como ajax
+
+            $("#ddlPais").change(function () {
+                $.ajax({
+                    url: "GetEstados/" + $("#ddlPais").val(),
+                    type: 'GET',
+                    dataType: 'JSON',
+                    success: function (result) {
+                        $("#ddlEstado").empty();
+                        $("#ddlEstado").append("<option value='0' selected>Selecciona algún Estado</option>");
+
+                        $.each(result.Objects, function (i, estado) {
+                            $("#ddlEstado").append("<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>");
+                        });
+                    },
+                    error: function () {
+                        alert("No se pudo consultar los estados");
+                    }
+                });
+            });
+
+            $("#ddlEstado").change(function () {
+                $.ajax({
+                    url: "GetMunicipio/" + $("#ddlEstado").val(),
+                    type: 'GET',
+                    dataType: 'JSON',
+                    success: function (result) {
+                        $("#ddlMunicipio").empty();
+                        $("#ddlMunicipio").append("<option value='0' selected>Selecciona algún municipio</option>");
+
+                        $.each(result.Objects, function (i, municipio) {
+                            $("#ddlMunicipio").append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
+                        });
+                    },
+                    error: function () {
+                        alert("No se pudo consultar los municipios");
+                    }
+                });
+            });
+
+            $("#ddlMunicipio").change(function () {
+                $.ajax({
+                    url: "GetColonia/" + $("#ddlMunicipio").val(),
+                    type: 'GET',
+                    dataType: 'JSON',
+                    success: function (result) {
+                        $("#ddlColonia").empty();
+                        $("#ddlColonia").append("<option value='0' selected>Selecciona alguna colonia</option>");
+
+                        $.each(result.Objects, function (i, colonia) {
+                            $("#ddlColonia").append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
+                            $("#ddlCodigoPostal").append("<option value='" + colonia.idColonia + "'>" + colonia.codigoPostal + "</option>");
+                        });
+                    },
+                    error: function () {
+                        alert("No se pudo consultar las colonias");
+                    }
+                });
+            });
+
+
+
+        </script>
+
+</html>
