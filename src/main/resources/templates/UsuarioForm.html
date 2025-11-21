@@ -179,69 +179,66 @@
     </body>
     <script>
 
-            //Ajax = herramienta para realizar consultas al servidor (de forma asincrona desde el cliente)
-            //Jquery = Biblioteca de JS que permite reducir sitaxis de JS y permite usar herramientas como ajax
+        //Ajax = herramienta para realizar consultas al servidor (de forma asincrona desde el cliente)
+        //Jquery = Biblioteca de JS que permite reducir sitaxis de JS y permite usar herramientas como ajax
 
-            $("#ddlPais").change(function () {
-                $.ajax({
-                    url: "GetEstados/" + $("#ddlPais").val(),
-                    type: 'GET',
-                    dataType: 'JSON',
-                    success: function (result) {
-                        $("#ddlEstado").empty();
-                        $("#ddlEstado").append("<option value='0' selected>Selecciona algún Estado</option>");
+        $("#ddlPais").change(function () {
+            $.ajax({
+                url: "http://localhost:8080/api/estado/pais?IdPais=" + $("#ddlPais").val(),
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (result) {
+                    $("#ddlEstado").empty();
+                    $("#ddlEstado").append("<option value='0' selected>Selecciona algún Estado</option>");
 
-                        $.each(result.Objects, function (i, estado) {
-                            $("#ddlEstado").append("<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>");
-                        });
-                    },
-                    error: function () {
-                        alert("No se pudo consultar los estados");
-                    }
-                });
+                    $.each(result.Objects, function (i, estado) {
+                        $("#ddlEstado").append("<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>");
+                    });
+                },
+                error: function () {
+                    alert("No se pudo consultar los estados");
+                }
             });
+        });
 
-            $("#ddlEstado").change(function () {
-                $.ajax({
-                    url: "GetMunicipio/" + $("#ddlEstado").val(),
-                    type: 'GET',
-                    dataType: 'JSON',
-                    success: function (result) {
-                        $("#ddlMunicipio").empty();
-                        $("#ddlMunicipio").append("<option value='0' selected>Selecciona algún municipio</option>");
+        $("#ddlEstado").change(function () {
+            $.ajax({
+                url: "http://localhost:8080/api/municipio/estado?IdEstado=" + $("#ddlEstado").val(),
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (result) {
+                    $("#ddlMunicipio").empty();
+                    $("#ddlMunicipio").append("<option value='0' selected>Selecciona algún municipio</option>");
 
-                        $.each(result.Objects, function (i, municipio) {
-                            $("#ddlMunicipio").append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
-                        });
-                    },
-                    error: function () {
-                        alert("No se pudo consultar los municipios");
-                    }
-                });
+                    $.each(result.Objects, function (i, municipio) {
+                        $("#ddlMunicipio").append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
+                    });
+                },
+                error: function () {
+                    alert("No se pudo consultar los municipios");
+                }
             });
+        });
 
-            $("#ddlMunicipio").change(function () {
-                $.ajax({
-                    url: "GetColonia/" + $("#ddlMunicipio").val(),
-                    type: 'GET',
-                    dataType: 'JSON',
-                    success: function (result) {
-                        $("#ddlColonia").empty();
-                        $("#ddlColonia").append("<option value='0' selected>Selecciona alguna colonia</option>");
+        $("#ddlMunicipio").change(function () {
+            $.ajax({
+                url: "http://localhost:8080/api/colonia/municipio?IdMunicipio=" + $("#ddlMunicipio").val(),
+                type: 'GET',
+                dataType: 'JSON',
+                success: function (result) {
+                    $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
+                    $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
 
-                        $.each(result.Objects, function (i, colonia) {
-                            $("#ddlColonia").append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
-                            $("#ddlCodigoPostal").append("<option value='" + colonia.idColonia + "'>" + colonia.codigoPostal + "</option>");
-                        });
-                    },
-                    error: function () {
-                        alert("No se pudo consultar las colonias");
-                    }
-                });
+                    $.each(result.Objects, function (i, colonia) {
+                        $("#ddlColonia").append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
+                        $("#ddlCodigoPostal").append("<option value='" + colonia.idColonia + "'>" + colonia.codigoPostal + "</option>");
+                    });
+                },
+                error: function () {
+                    alert("No se pudo consultar las colonias");
+                }
             });
-
-
-
-        </script>
+        });
+    </script>
 
 </html>

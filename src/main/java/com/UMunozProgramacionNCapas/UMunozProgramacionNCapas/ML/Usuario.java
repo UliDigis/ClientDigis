@@ -1,61 +1,35 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+
 import java.util.Date;
 import java.util.List;
-import org.springframework.format.annotation.DateTimeFormat;
 
 public class Usuario {
 
     private int IdUsuario;
-    @NotBlank(message = "El obligatorio colocar un User Name.")
-    @Size(min = 2, max = 25, message = "El User Name del usuario debe de tener de 2 a 25 caracteres.")
+
     private String UserName;
 
-    @NotBlank(message = "Es obligatorio el Nombre.")
-    @Pattern(regexp = "^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$", message = "El nombre solo debe contener letras.")
     private String Nombre;
 
-    @NotBlank(message = "El Apellido Paterno es obligatorio.")
     private String ApellidoPaterno;
     private String ApellidoMaterno;
 
-    @NotBlank(message = "El correo electronico es obligatorio.")
-    @Email(message = "Formato de correco electronico invalido.")
     private String Email;
-
-    @NotBlank(message = "La contraseña es obligatoria.")
-    @Size(min = 8, message = "La contraseña debe de tener al menos 8 caracteres.")
     private String Password;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date FechaNacimiento;
-
-//  @NotBlank(message = "EL Sexo es obligatorio.")
     private char Sexo;
 
-    @NotBlank(message = "El telefono es obligatorio.")
-//    @Pattern(regexp = "\\d{10}", message = "El telefono debe ser un numero de 10 digitos.")
     private String Telefono;
 
-//    @Pattern(regexp = "\\d{10}", message = "El celular debe ser un numero de 10 digitos.")
     private String Celular;
 
-    @NotBlank(message = "El CURP es Obligatorio.")
-//    @Pattern(regexp = "[A-Z]{4}[0-9]{6}[H|M][A-Z]{5}[0-9]{2}", message = "Formato de CURP invalido ")
     private String CURP;
 
     private String Imagen;
 
-//    @NotBlank(message = "El Rol es obligatorio.")
     public Rol rol;
 
-//    @Valid
-//    @NotBlank(message = "Debe haver al menos una direccion.")
     public List<Direccion> Direcciones;
 
     public Rol getRol() {

@@ -1,27 +1,17 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
 public class Colonia {
 
     private int IdColonia;
     
-    @NotBlank(message = "El nombre de la colonia es obligatorio.")
-    @Size(max = 100, message = " El Nombre de la colonia es demasiado largo.")
     private String Nombre;
     
-    @NotBlank(message = "El numero de la colonia es obligatorio.")
-    @Size(max=10, message = "El codigo postal es demasiado largo.")
     private String CodigoPostal;
     
     private String NumeroInterior;
     
     private String NumeroExterior;
     
-    @Valid
-    @NotBlank(message = "El municipio (y sus datos) son obligatorios")
     public Municipio municipio;
 
     public String getNumeroInterior() {

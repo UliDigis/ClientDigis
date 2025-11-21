@@ -1,6 +1,5 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
 
-
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Colonia;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.ErrorCarga;
@@ -42,78 +41,142 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-
 @Controller
 @RequestMapping("usuario")
 public class UsuarioController {
     
     private static final String urlBase = "http://localhost:8080/";
-    
-    
+
     @GetMapping
     public String GetAll(Model model) {
-        
+
         RestTemplate restTemplate = new RestTemplate();
-        
-        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase+"api/usuario",
+
+        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Usuario>>>(){});
-        
-        if(responseEntity.getStatusCode().value() == 200){
+                new ParameterizedTypeReference<Result<List<Usuario>>>() {
+        });
+
+        if (responseEntity.getStatusCode().value() == 200) {
             Result result = responseEntity.getBody();
             model.addAttribute("usuarios", result.Object);
+        } else {
+            model.addAttribute("errorMessage", "fallo");
         }
 //        model.addAttribute("usuarioBusqueda", new Usuario());
         return "index";
     }
+
+    @GetMapping("detail/")
+    public String Detail(@RequestParam("IdUsuario") int IdUsuario, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+       
+        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/?id=" + IdUsuario,
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Usuario>>>() {
+        });
+        if (responseEntity.getStatusCode().value() == 200) {
+            Result result = responseEntity.getBody();
+            model.addAttribute("usuario", result.Object);
+        }
+
+        return "UsuarioDetail";
+    }
     
-//    // --------- IdUsuario ----------
-//    @GetMapping("detail/{idUsuario}")
-//    public String Detail(@PathVariable("idUsuario") int IdUsuario, Model model) {
-//
-//        Result result = usuarioJPADAOImplementation.GetById(IdUsuario);
-//
-//        model.addAttribute("usuario", result.Object);
-//
-//        return "UsuarioDetail";
-//    }
-//    // --------- IdUsuario ----------
-//
-//    // --------- Pais ----------
-//    @GetMapping("GetEstados/{IdPais}")
-//    @ResponseBody
-//    public Result GetEstadosByPais(@PathVariable int IdPais) {
-//
-//        Result result = estadoJPADAOImplementation.GetByPais(IdPais);
-//
-//        return result;
-//    }
-//    // --------- Pais ----------
-//
-//    // --------- Estado ---------
-//    @GetMapping("GetMunicipio/{IdEstado}")
-//    @ResponseBody
-//    public Result GetMunicipioByEstado(@PathVariable int IdEstado) {
-//
-//        Result result = municipioJPADAOImplementation.GetByEstado(IdEstado);
-//
-//        return result;
-//    }
-//    // --------- Estado ---------
-//
-//    // --------- Colonia ---------
-//    @GetMapping("GetColonia/{IdMunicipio}")
-//    @ResponseBody
-//    public Result GetColoniaByMunicipio(@PathVariable int IdMunicipio) {
-//
-//        Result result = coloniaJPADAOImplementation.GetByMunicipio(IdMunicipio);
-//
-//        return result;
-//
-//    }
-//    // --------- Colonia ---------
-//
+
+
+//    Esatdo a Pais -----------------------------------------------------------
+    @GetMapping("GetEstados/")
+    @ResponseBody
+    public Result GetByPais(@RequestParam("IdPais") int IdPais, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+        
+
+        ResponseEntity<Result<List<Pais>>> responseEntity = restTemplate.exchange(urlBase + "api/estado/pais?IdPais=" + IdPais,
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Pais>>>() {
+        });
+        if (responseEntity.getStatusCode().value() == 200) {
+            result = responseEntity.getBody();
+        }
+        return result;
+    }
+
+//    Estado a Pais -----------------------------------------------------------
+//    Municipio a Estado ---------------------------------------------------------
+    @GetMapping("GetMunicipio/")
+    @ResponseBody
+    public Result GetByEstado(@RequestParam("IdEstado") int IdEstado, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+        
+        
+        ResponseEntity<Result<List<Estado>>> responseEntity = restTemplate.exchange(urlBase+"api/municipio/estado?IdEstado="+IdEstado,
+                HttpMethod.GET,
+                HttpEntity.EMPTY, 
+                new ParameterizedTypeReference<Result<List<Estado>>>(){});
+        if (responseEntity.getStatusCode().value() == 200) {
+            result = responseEntity.getBody();
+        }else{
+            result.Correct = false;
+        }
+        
+        return result;
+    }
+//    Municipio a Esatdo ---------------------------------------------------------
+//    Colonia a Municipio --------------------------------------------------------
+    
+    @GetMapping("GetColonia/")
+    @ResponseBody
+    public Result GetByMunicipio(@RequestParam("IdMunicipio") int IdMunicipio){
+        
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+        
+        ResponseEntity<Result<List<Municipio>>> responseEntity = restTemplate.exchange(urlBase+"api/colonia/municipio?IdMunicipio="+ IdMunicipio,
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Municipio>>>(){});
+     
+        if (responseEntity.getStatusCode().value() == 200) {
+            result = responseEntity.getBody();
+        }
+        
+        return result;
+    }
+    
+//    Colonia a Municipio --------------------------------------------------------
+    
+//Add ------------------------------------------------------------------------
+    
+    @PostMapping("/add")
+    public String Add(Model model){
+        
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+        
+        ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange(urlBase+"api/rol",
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Rol>>>(){});
+        
+        if (responseEntity.getStatusCode().value() == 200) {
+            result = responseEntity.getBody();
+        }
+        return "usuarioForm";
+    }
+    
+//Add ------------------------------------------------------------------------
+    
+    
+    
 //    // ------------- Add Usuairo ---------------
 //    // GET
 //    @GetMapping("/add")
@@ -431,5 +494,4 @@ public class UsuarioController {
 //
 //    }
 //    //  ---------- Lectura de Archivo -------------
-
 }

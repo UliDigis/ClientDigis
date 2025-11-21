@@ -17,11 +17,13 @@
                             <i class="bi bi-people-fill me-2"></i>Lista de Usuarios
                         </h1>
                     </div>
-                    <div class="col">
+</div>-->
+<!--                    <div class="col">
                         <a class="btn btn-success btn-lg shadow me-2" th:href="@{/Usuario/add}">
                             <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
                         </a>
-                    </div>
+                    </div>-->
+<!--   
                     <div class="col">
                         <a class="btn btn-primary btn-lg shadow" th:href="@{/Usuario/CargaMasiva}">
                             <i class="bi bi-download me-2"></i>Super Carga
@@ -32,7 +34,7 @@
 
             <hr>
 
-            <div class="card shadow-sm mb-4">
+            <!--<div class="card shadow-sm mb-4">-->
 <!--                <div class="card-header bg-light text-primary">
                     <i class="bi bi-funnel-fill me-2"></i>Filtros de Búsqueda
                 </div>
@@ -85,8 +87,8 @@
                                 <th scope="col" class="text-center">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr th:each="usuario, usuarioStat : ${usuarios}">
+                        <tbody  th:each="usuario, usuarioStat : ${usuarios}">
+                            <tr>
 
                                 <td>
                                     <div class="text-center my-4">
@@ -119,22 +121,22 @@
                                             <span th:utext="'Int: <b>' + ${direccion.NumeroInterior} + '</b> Ext: <b>' + ${direccion.NumeroExterior} + '</b>'"></span>
                                         </div>
                                         <small class="text-muted">
-                                            Colonia: <span th:text="${direccion.colonia.Nombre}">Colonia</span><br>
+                                            Colonia: <span th:text="${direccion.colonia.nombre}">Colonia</span><br>
                                             Mpo/Edo: 
-                                            <span th:text="${direccion.colonia.municipio.Nombre}">Municipio</span>, 
-                                            <span th:text="${direccion.colonia.municipio.estado.Nombre}">Estado</span><br>
-                                            País: <span th:text="${direccion.colonia.municipio.estado.pais.Nombre}">País</span>
+                                            <span th:text="${direccion.municipio.nombre}">Municipio</span>
+                                            <span th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span><br>
+                                            País: <span th:text="${direccion.colonia.municipio.estado.pais.nombre}">País</span>
                                         </small>
                                     </div>
                                 </td>
                                 
                                 <td>
-                                    <div><i class="bi bi-clipboard me-1"></i> Rol: <span th:text="${usuario.Rol.Nombre}"></span></div>
+                                    <div><i class="bi bi-clipboard me-1"></i> Rol: <span th:text="${usuario.rol.nombre}"></span></div>
                                 </td>
 
                                 <td>
                                     <div class="d-grid gap-2 d-md-block text-center">
-                                        <a class="btn btn-warning btn-sm" th:href="@{/Usuario/detail/{idUsuario}(idUsuario=${usuario.IdUsuario})}">
+                                        <a class="btn btn-warning btn-sm" th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
                                             <i class="bi bi-eye-fill me-1"></i> Vizualizar
                                         </a>
                                         <button class="btn btn-danger btn-sm" type="button" disabled>
