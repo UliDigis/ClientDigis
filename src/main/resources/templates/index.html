@@ -18,11 +18,11 @@
                                     </h1>
                                 </div>
             </div>-->
-            <!--                    <div class="col">
-                                    <a class="btn btn-success btn-lg shadow me-2" th:href="@{/Usuario/add}">
+                              <div class="col">
+                                    <a class="btn btn-success btn-lg shadow me-2" th:href="@{/usuario/add}">
                                         <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
                                     </a>
-                                </div>-->
+                                </div>
             <!--   
                                 <div class="col">
                                     <a class="btn btn-primary btn-lg shadow" th:href="@{/Usuario/CargaMasiva}">
@@ -139,7 +139,7 @@
                                     <a class="btn btn-warning btn-sm" th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
                                         <i class="bi bi-eye-fill me-1"></i> Vizualizar
                                     </a>
-                                    <button class="btn btn-danger btn-sm" type="button" disabled>
+                                    <button class="btn btn-danger btn-sm"  th:href="@{/usuario/delete}" type="button" disabled>
                                         <i class="bi bi-trash-fill me-1"></i> Eliminar
                                     </button>
                                 </div>
