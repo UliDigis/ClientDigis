@@ -139,9 +139,9 @@
                                     <a class="btn btn-warning btn-sm" th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
                                         <i class="bi bi-eye-fill me-1"></i> Vizualizar
                                     </a>
-                                    <button class="btn btn-danger btn-sm"  th:href="@{/usuario/delete}" type="button" disabled>
+                                    <a class="btn btn-danger btn-sm"  th:href="@{/usuario/delete(IdUsuario=${usuario.IdUsuario})}" >
                                         <i class="bi bi-trash-fill me-1"></i> Eliminar
-                                    </button>
+                                    </a>
                                 </div>
                             </td>
                         </tr>

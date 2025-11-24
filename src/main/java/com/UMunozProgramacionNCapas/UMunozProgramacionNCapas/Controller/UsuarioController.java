@@ -1,50 +1,52 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
+//
+//import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Colonia;
+//import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
+//import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.ErrorCarga;
 
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Colonia;
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.ErrorCarga;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Municipio;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Estado;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Pais;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Rol;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Usuario;
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Service.ValidationService;
-import jakarta.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
+//import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Service.ValidationService;
+//import jakarta.servlet.http.HttpSession;
+//import java.io.BufferedReader;
+//import java.io.File;
+//import java.io.FileInputStream;
+//import java.io.FileReader;
+//import java.io.IOException;
+//import java.io.InputStream;
+//import java.text.SimpleDateFormat;
+//import java.time.LocalDateTime;
+//import java.time.format.DateTimeFormatter;
+//import java.util.ArrayList;
+//import java.util.Arrays;
+//import java.util.Base64;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
+//import org.springframework.web.bind.annotation.ModelAttribute;
+//import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
+//import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("usuario")
 public class UsuarioController {
-    
+
     private static final String urlBase = "http://localhost:8080/";
 
     @GetMapping
@@ -72,7 +74,7 @@ public class UsuarioController {
     public String Detail(@RequestParam("IdUsuario") int IdUsuario, Model model) {
 
         RestTemplate restTemplate = new RestTemplate();
-       
+
         ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/?id=" + IdUsuario,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
@@ -85,8 +87,6 @@ public class UsuarioController {
 
         return "UsuarioDetail";
     }
-    
-
 
 //    Esatdo a Pais -----------------------------------------------------------
     @GetMapping("GetEstados/")
@@ -95,7 +95,6 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
-        
 
         ResponseEntity<Result<List<Pais>>> responseEntity = restTemplate.exchange(urlBase + "api/estado/pais?IdPais=" + IdPais,
                 HttpMethod.GET,
@@ -116,67 +115,84 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
-        
-        
-        ResponseEntity<Result<List<Estado>>> responseEntity = restTemplate.exchange(urlBase+"api/municipio/estado?IdEstado="+IdEstado,
+
+        ResponseEntity<Result<List<Estado>>> responseEntity = restTemplate.exchange(urlBase + "api/municipio/estado?IdEstado=" + IdEstado,
                 HttpMethod.GET,
-                HttpEntity.EMPTY, 
-                new ParameterizedTypeReference<Result<List<Estado>>>(){});
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<List<Estado>>>() {
+        });
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
-        }else{
+        } else {
             result.Correct = false;
         }
-        
+
         return result;
     }
 //    Municipio a Esatdo ---------------------------------------------------------
 //    Colonia a Municipio --------------------------------------------------------
-    
+
     @GetMapping("GetColonia/")
     @ResponseBody
-    public Result GetByMunicipio(@RequestParam("IdMunicipio") int IdMunicipio){
-        
+    public Result GetByMunicipio(@RequestParam("IdMunicipio") int IdMunicipio) {
+
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
-        
-        ResponseEntity<Result<List<Municipio>>> responseEntity = restTemplate.exchange(urlBase+"api/colonia/municipio?IdMunicipio="+ IdMunicipio,
+
+        ResponseEntity<Result<List<Municipio>>> responseEntity = restTemplate.exchange(urlBase + "api/colonia/municipio?IdMunicipio=" + IdMunicipio,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Municipio>>>(){});
-     
+                new ParameterizedTypeReference<Result<List<Municipio>>>() {
+        });
+
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         }
-        
+
         return result;
     }
-    
+
 //    Colonia a Municipio --------------------------------------------------------
-    
 //Add ------------------------------------------------------------------------
-    
     @PostMapping("/add")
-    public String Add(Model model){
-        
+    public String Add(Model model) {
+
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
-        
-        ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange(urlBase+"api/rol",
+
+        ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange(urlBase + "api/rol",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Rol>>>(){});
-        
+                new ParameterizedTypeReference<Result<List<Rol>>>() {
+        });
+
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         }
         return "usuarioForm";
     }
-    
+
 //Add ------------------------------------------------------------------------
-    
-    
-    
+//    Delete ------------------------------------------------------------------
+    @DeleteMapping
+    public String Delete(@RequestParam("IdUsuario") int IdUsuario, Model model) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            restTemplate.exchange(
+                    urlBase + "api/usuario/delete?IdUsuario=" + IdUsuario, // URL API Destino
+                    HttpMethod.DELETE,
+                    HttpEntity.EMPTY,
+                    Void.class
+            );
+        } catch (Exception ex) {
+            model.addAttribute("error", "Error: " + ex.getMessage());
+        }
+
+        return "redirect:/usuarios";
+    }
+
+//    Delete ------------------------------------------------------------------
 //    // ------------- Add Usuairo ---------------
 //    // GET
 //    @GetMapping("/add")
