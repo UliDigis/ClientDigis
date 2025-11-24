@@ -174,13 +174,13 @@ public class UsuarioController {
 
 //Add ------------------------------------------------------------------------
 //    Delete ------------------------------------------------------------------
-    @DeleteMapping
+    @GetMapping("delete")
     public String Delete(@RequestParam("IdUsuario") int IdUsuario, Model model) {
         RestTemplate restTemplate = new RestTemplate();
 
         try {
             restTemplate.exchange(
-                    urlBase + "api/usuario/delete?IdUsuario=" + IdUsuario, // URL API Destino
+                    urlBase + "api/usuario/delete?IdUsuario=" + IdUsuario, 
                     HttpMethod.DELETE,
                     HttpEntity.EMPTY,
                     Void.class
@@ -189,7 +189,7 @@ public class UsuarioController {
             model.addAttribute("error", "Error: " + ex.getMessage());
         }
 
-        return "redirect:/usuarios";
+        return "redirect:/usuario";
     }
 
 //    Delete ------------------------------------------------------------------
