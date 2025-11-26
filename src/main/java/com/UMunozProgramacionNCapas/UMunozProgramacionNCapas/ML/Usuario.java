@@ -30,6 +30,8 @@ public class Usuario {
 
     private String Imagen;
 
+    private boolean Status;
+
     public Rol rol;
 
     public List<Direccion> Direcciones;
@@ -153,5 +155,13 @@ public class Usuario {
     public void setDirecciones(List<Direccion> Direcciones) {
         this.Direcciones = Direcciones;
     }
+
+    public boolean isStatus() {
+        return Status;
+    }
+    public void setStatus(boolean Status) {
+        this.Status = Status;
+    }
+    
 
 }

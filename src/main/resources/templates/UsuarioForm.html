@@ -14,14 +14,14 @@
                 </div>
 
                 <div class="card-body p-4">
-                    <form th:object="${usuario}" th:action="@{add}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <form th:object="${usuario}" th:action="@{/usuario/add}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
 
 
                         <h5 class="mb-3 text-secondary"><i class="bi bi-key-fill me-2"></i>Datos de Cuenta</h5>
                         <div class="row mb-4 g-3">
                             <div class="col-lg-3 col-md-4">
-                                <label for="imagenFiel" class="form-label">Imagen de Perfil</label>
-                                <input class="form-control" type="file" id="imagenFiel" name="imagenFiel" accept="image/*">
+                                <label for="imagenFile" class="form-label">Imagen de Perfil</label>
+                                <input class="form-control" type="file" id="imagenFile" name="imagenFile" accept="image/*">
                                 <small class="text-muted">Max. 2MB, formatos JPG/PNG.</small>
                             </div>
                             <div class="col-lg-3 col-md-4">
@@ -104,7 +104,7 @@
                         <hr>
                         <h5 class="mb-3 text-secondary"><i class="bi bi-geo-alt-fill me-2"></i>Dirección</h5>
 
-                        <div class="row mb-4 g-4">
+                        <div class="row mb-4 g-3">
                             <div class="col-md-3">
                                 <label for="calle" class="form-label">Calle</label>
                                 <input type="text" class="form-control" id="calle" th:field="*{Direcciones[0].Calle}" name="calle" placeholder="Nombre de la calle">
@@ -125,7 +125,7 @@
                                 <select id="ddlPais" name="IdPais" class="form-select" 
                                         th:field="*{Direcciones[0].Colonia.Municipio.Estado.Pais.IdPais}">
                                     <option value="0" selected>Selecciona algún País</option>
-                                    <option th:each="pais : ${Paises}" 
+                                    <option th:each="pais : ${paises}" 
                                             th:value="${pais.idPais}" 
                                             th:text="${pais.nombre}">
                                     </option>
@@ -139,14 +139,14 @@
 
                             <div class="col-md-3">
                                 <label class="form-label">Estado</label>
-                                <select id="ddlEstado" th:field ="*{Direcciones[0].Colonia.Municipio.Estado.IdEstado}" class="form-select">
+                                <select id="ddlEstado" th:field ="*{Direcciones[0].colonia.municipio.estado.IdEstado}" class="form-select">
                                     <option value=0 selected>Selecciona algun Estado</option>
                                 </select>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">Municipio</label>
-                                <select id="ddlMunicipio" th:field ="*{Direcciones[0].Colonia.Municipio.IdMunicipio}" class="form-select">
+                                <select id="ddlMunicipio" th:field ="*{Direcciones[0].colonia.municipio.IdMunicipio}" class="form-select">
                                     <option value=0 selected>Selecciona algun Municipio</option>
                                 </select></div>
 
