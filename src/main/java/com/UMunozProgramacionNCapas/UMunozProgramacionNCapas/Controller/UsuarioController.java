@@ -4,6 +4,8 @@ package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
 //import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
 //import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.ErrorCarga;
 
+import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Colonia;
+import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Municipio;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Estado;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Pais;
@@ -34,9 +36,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 //import org.springframework.web.bind.annotation.ModelAttribute;
 //import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -75,35 +80,201 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/?id=" + IdUsuario,
+        ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange(urlBase + "api/rol",
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Usuario>>>() {
+                new ParameterizedTypeReference<Result<List<Rol>>>() {
         });
-        if (responseEntity.getStatusCode().value() == 200) {
-            Result result = responseEntity.getBody();
+
+        ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/?id=" + IdUsuario,
+                HttpMethod.GET,
+                HttpEntity.EMPTY,
+                new ParameterizedTypeReference<Result<Usuario>>() {
+        });
+        if (responseEntity.getStatusCode().value() == 200 || responseEntityRol.getStatusCode().value() == 200) {
+            Result<Usuario> result = responseEntity.getBody();
+            Result resultRol = responseEntityRol.getBody();
+            model.addAttribute("rol", resultRol.Object);
             model.addAttribute("usuario", result.Object);
         }
 
         return "UsuarioDetail";
     }
 
-//    Esatdo a Pais -----------------------------------------------------------
-    @GetMapping("GetEstados/")
-    @ResponseBody
-    public Result GetByPais(@RequestParam("IdPais") int IdPais, Model model) {
+//Add ------------------------------------------------------------------------
+    @GetMapping("/add")
+    public String Add(Model model) {
 
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
 
-        ResponseEntity<Result<List<Pais>>> responseEntity = restTemplate.exchange(urlBase + "api/estado/pais?IdPais=" + IdPais,
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Pais>>>() {
-        });
+        try {
+            ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange(urlBase + "api/rol",
+                    HttpMethod.GET,
+                    HttpEntity.EMPTY,
+                    new ParameterizedTypeReference<Result<List<Rol>>>() {
+            });
+
+            if (responseEntityRol.getStatusCode().value() == 200) {
+                result = responseEntityRol.getBody();
+                model.addAttribute("roles", result.Object);
+            }
+            Usuario usuario = new Usuario();
+            model.addAttribute("usuario", usuario);
+        } catch (Exception ex) {
+            result.Correct = false;
+        }
+
+        return "usuarioForm";
+    }
+
+    @GetMapping("/add/")
+    public String Add(@ModelAttribute Usuario usuario, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+        try {
+            HttpEntity<Usuario> entity = new HttpEntity<>(usuario);
+
+            ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/add",
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<Result<List<Usuario>>>() {
+            });
+
+            if (responseEntity.getStatusCode().value() == 200) {
+                result = responseEntity.getBody();
+                model.addAttribute("usuario", result.Object);
+            }
+        } catch (Exception ex) {
+            result.Correct = false;
+        }
+        return "usuarioForm";
+    }
+
+//Add ------------------------------------------------------------------------
+//    Delete ------------------------------------------------------------------
+    @GetMapping("delete")
+    public String Delete(@RequestParam("IdUsuario") int IdUsuario, Model model) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            restTemplate.exchange(
+                    urlBase + "api/usuario/delete?IdUsuario=" + IdUsuario,
+                    HttpMethod.DELETE,
+                    HttpEntity.EMPTY,
+                    Void.class
+            );
+        } catch (Exception ex) {
+            model.addAttribute("error", "Error: " + ex.getMessage());
+        }
+
+        return "redirect:/usuario";
+    }
+
+    @PostMapping("update")
+    public String Update(@ModelAttribute Usuario usuario, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+
+        try {
+            HttpEntity<Usuario> entity = new HttpEntity<>(usuario);
+
+            ResponseEntity<Result> responseEntity = restTemplate.exchange(urlBase + "api/usuario/update/" + usuario.getIdUsuario(),
+                    HttpMethod.PUT,
+                    entity,
+                    new ParameterizedTypeReference<Result>() {
+            });
+
+            if (responseEntity.getStatusCode().value() == 200) {
+                result = responseEntity.getBody();
+
+            }
+
+        } catch (Exception ex) {
+            result.Correct = false;
+            result.ex = ex;
+        }
+        return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
+    }
+
+    @PostMapping("updateDireccion")
+    public String UpdateDireccion(@ModelAttribute Direccion direccion, int IdUsuario, Model model) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+
+        try {
+            HttpEntity<Direccion> entity = new HttpEntity<>(direccion);
+
+            ResponseEntity<Result<List<Direccion>>> responseEntity = restTemplate.exchange(urlBase,
+                    HttpMethod.PUT,
+                    entity,
+                    new ParameterizedTypeReference<Result<List<Direccion>>>() {
+            });
+
+            if (responseEntity.getStatusCode().value() == 200 || IdUsuario > 0) {
+
+                result = responseEntity.getBody();
+                model.addAttribute("direccion", result.Object);
+            }
+
+        } catch (Exception ex) {
+            result.Correct = false;
+            result.ErrorMessage = ex.getMessage();
+            model.addAttribute("errorMessage", result.ErrorMessage);
+        }
+
+        return ("redirect:/usuario/detail/?IdUsuario=" + IdUsuario);
+    }
+
+    @GetMapping("GetPaises/")
+    @ResponseBody
+    public Result GetPaises() {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+
+        ResponseEntity<Result<List<Pais>>> responseEntity
+                = restTemplate.exchange(
+                        urlBase + "api/pais",
+                        HttpMethod.GET,
+                        HttpEntity.EMPTY,
+                        new ParameterizedTypeReference<Result<List<Pais>>>() {
+                }
+                );
+
+        if (responseEntity.getStatusCode().value() == 200) {
+            result = responseEntity.getBody();
+        } else {
+            result.Correct = false;
+        }
+
+        return result;
+    }
+
+    //    Esatdo a Pais -----------------------------------------------------------
+    @GetMapping("GetEstados/")
+    @ResponseBody
+    public Result GetEstados(@RequestParam("IdPais") int IdPais) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Result result = new Result();
+
+        ResponseEntity<Result<List<Estado>>> responseEntity
+                = restTemplate.exchange(
+                        urlBase + "api/estado/pais?IdPais=" + IdPais,
+                        HttpMethod.GET,
+                        HttpEntity.EMPTY,
+                        new ParameterizedTypeReference<Result<List<Estado>>>() {
+                }
+                );
+
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         }
+
         return result;
     }
 
@@ -116,10 +287,10 @@ public class UsuarioController {
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
 
-        ResponseEntity<Result<List<Estado>>> responseEntity = restTemplate.exchange(urlBase + "api/municipio/estado?IdEstado=" + IdEstado,
+        ResponseEntity<Result<List<Municipio>>> responseEntity = restTemplate.exchange(urlBase + "api/municipio/estado?IdEstado=" + IdEstado,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Estado>>>() {
+                new ParameterizedTypeReference<Result<List<Municipio>>>() {
         });
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
@@ -139,10 +310,10 @@ public class UsuarioController {
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
 
-        ResponseEntity<Result<List<Municipio>>> responseEntity = restTemplate.exchange(urlBase + "api/colonia/municipio?IdMunicipio=" + IdMunicipio,
+        ResponseEntity<Result<List<Colonia>>> responseEntity = restTemplate.exchange(urlBase + "api/colonia/municipio?IdMunicipio=" + IdMunicipio,
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Municipio>>>() {
+                new ParameterizedTypeReference<Result<List<Colonia>>>() {
         });
 
         if (responseEntity.getStatusCode().value() == 200) {
@@ -153,45 +324,6 @@ public class UsuarioController {
     }
 
 //    Colonia a Municipio --------------------------------------------------------
-//Add ------------------------------------------------------------------------
-    @PostMapping("/add")
-    public String Add(Model model) {
-
-        RestTemplate restTemplate = new RestTemplate();
-        Result result = new Result();
-
-        ResponseEntity<Result<List<Rol>>> responseEntity = restTemplate.exchange(urlBase + "api/rol",
-                HttpMethod.GET,
-                HttpEntity.EMPTY,
-                new ParameterizedTypeReference<Result<List<Rol>>>() {
-        });
-
-        if (responseEntity.getStatusCode().value() == 200) {
-            result = responseEntity.getBody();
-        }
-        return "usuarioForm";
-    }
-
-//Add ------------------------------------------------------------------------
-//    Delete ------------------------------------------------------------------
-    @GetMapping("delete")
-    public String Delete(@RequestParam("IdUsuario") int IdUsuario, Model model) {
-        RestTemplate restTemplate = new RestTemplate();
-
-        try {
-            restTemplate.exchange(
-                    urlBase + "api/usuario/delete?IdUsuario=" + IdUsuario, 
-                    HttpMethod.DELETE,
-                    HttpEntity.EMPTY,
-                    Void.class
-            );
-        } catch (Exception ex) {
-            model.addAttribute("error", "Error: " + ex.getMessage());
-        }
-
-        return "redirect:/usuario";
-    }
-
 //    Delete ------------------------------------------------------------------
 //    // ------------- Add Usuairo ---------------
 //    // GET

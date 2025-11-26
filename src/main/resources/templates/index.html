@@ -10,69 +10,69 @@
 
         <div class="container my-5" >
 
-            <!--            <div class="container text-center">
-                            <div class="row">
-                                <div class="col">
-                                    <h1 class="text-primary">
-                                        <i class="bi bi-people-fill me-2"></i>Lista de Usuarios
-                                    </h1>
-                                </div>
-            </div>-->
-            <div class="col">
-                <a class="btn btn-success btn-lg shadow me-2" th:href="@{/usuario/add}">
-                    <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
-                </a>
+            <div class="container text-center">
+                <div class="row">
+                    <div class="col">
+                        <h1 class="text-primary">
+                            <i class="bi bi-people-fill me-2"></i>Lista de Usuarios
+                        </h1>
+                    </div>
+
+                    <div class="col">
+                        <a class="btn btn-success btn-lg shadow me-2" th:href="@{/usuario/add}">
+                            <i class="bi bi-person-plus-fill me-2"></i>Agregar Nuevo Usuario
+                        </a>
+                    </div>
+
+                    <div class="col">
+                        <a class="btn btn-primary btn-lg shadow" th:href="@{/Usuario/CargaMasiva}">
+                            <i class="bi bi-download me-2"></i>Super Carga
+                        </a>
+                    </div>
+                </div>
             </div>
-            <!--   
-                                <div class="col">
-                                    <a class="btn btn-primary btn-lg shadow" th:href="@{/Usuario/CargaMasiva}">
-                                        <i class="bi bi-download me-2"></i>Super Carga
-                                    </a>
-                                </div>
-                            </div>
-                        </div>-->
 
             <hr>
 
-            <!--<div class="card shadow-sm mb-4">-->
-            <!--                <div class="card-header bg-light text-primary">
-                                <i class="bi bi-funnel-fill me-2"></i>Filtros de Búsqueda
-                            </div>
-                            <div class="card-body">
-                                <form method="post" th:action="@{/Usuario/GetAll}" th:object="${usuarioBusqueda}" class="row g-3 align-items-end">
-            
-                                    <div class="col-md-3 col-sm-6">
-                                        <label for="pNombreUsuario" class="form-label">Nombre</label>
-                                        <input type="text" class="form-control" id="pNombreUsuario" th:field="*{Nombre}" placeholder="Buscar por nombre">
-                                    </div>
-            
-                                    <div class="col-md-3 col-sm-6">
-                                        <label for="pApellidoPaterno" class="form-label">Apellido Paterno</label>
-                                        <input type="text" class="form-control" id="pApellidoPaterno" th:field="*{ApellidoPaterno}" placeholder="Buscar por Ap. Paterno">
-                                    </div>
-            
-                                    <div class="col-md-3 col-sm-6">
-                                        <label for="pApellidoMaterno" class="form-label">Apellido Materno</label>
-                                        <input type="text" class="form-control" id="pApellidoMaterno" th:field="*{ApellidoMaterno}" placeholder="Buscar por Ap. Materno">
-                                    </div>
-            
-                                    <div class="col-md-3 col-sm-6">
-                                        <label for="pNombreRol" class="form-label">Rol</label>
-                                        <select class="form-control" id="pNombreRol" th:field="*{Rol.idRol}">
-                                            <option value="0" selected>-- Todos los Roles --</option>
-                                            <option th:each="rol : ${roles}" th:value="${rol.idRol}" th:text="${rol.nombre}"></option>
-                                        </select>
-                                    </div>
-            
-            
-            
-                                    <div class="col-12 text-end">
-                                        <button type="submit" class="btn btn-primary shadow">
-                                            <i class="bi bi-search me-2"></i>Buscar
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>-->
+<!--            <div class="card shadow-sm mb-4>
+                 <div class="card-header bg-light text-primary">
+                <i class="bi bi-funnel-fill me-2"></i>Filtros de Búsqueda
+            </div>
+            <div class="card-body">
+                <form method="post" th:action="@{/usuario}" th:object="${usuarioBusqueda}" class="row g-3 align-items-end">
+
+                    <div class="col-md-3 col-sm-6">
+                        <label for="pNombreUsuario" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="pNombreUsuario" th:field="*{Nombre}" placeholder="Buscar por nombre">
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <label for="pApellidoPaterno" class="form-label">Apellido Paterno</label>
+                        <input type="text" class="form-control" id="pApellidoPaterno" th:field="*{ApellidoPaterno}" placeholder="Buscar por Ap. Paterno">
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <label for="pApellidoMaterno" class="form-label">Apellido Materno</label>
+                        <input type="text" class="form-control" id="pApellidoMaterno" th:field="*{ApellidoMaterno}" placeholder="Buscar por Ap. Materno">
+                    </div>
+
+                    <div class="col-md-3 col-sm-6">
+                        <label for="pNombreRol" class="form-label">Rol</label>
+                        <select class="form-control" id="pNombreRol" th:field="*{Rol.idRol}">
+                            <option value="0" selected>-- Todos los Roles --</option>
+                            <option th:each="rol : ${roles}" th:value="${rol.idRol}" th:text="${rol.nombre}"></option>
+                        </select>
+                    </div>
+
+
+
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-primary shadow">
+                            <i class="bi bi-search me-2"></i>Buscar
+                        </button>
+                    </div>
+                </form>
+            </div>-->
 
 
             <div class="table-responsive">

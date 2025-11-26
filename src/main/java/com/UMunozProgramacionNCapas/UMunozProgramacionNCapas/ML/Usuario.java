@@ -1,7 +1,6 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML;
 
-
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class Usuario {
@@ -16,8 +15,11 @@ public class Usuario {
     private String ApellidoMaterno;
 
     private String Email;
+    
     private String Password;
-    private Date FechaNacimiento;
+    
+    private LocalDate FechaNacimiento;
+    
     private char Sexo;
 
     private String Telefono;
@@ -104,11 +106,11 @@ public class Usuario {
         this.Password = Password;
     }
 
-    public Date getFechaNacimiento() {
+    public LocalDate getFechaNacimiento() {
         return FechaNacimiento;
     }
 
-    public void setFechaNacimiento(Date FechaNacimiento) {
+    public void setFechaNacimiento(LocalDate FechaNacimiento) {
         this.FechaNacimiento = FechaNacimiento;
     }
 
