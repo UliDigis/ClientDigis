@@ -89,7 +89,7 @@
                                                 </small>
                                             </td>
                                             <td class="text-center text-nowrap">
-                                                <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#modalDireccion"><i class="bi bi-pencil"></i></button>
+                                                <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#modalDireccion"><i class="bi bi-pencil"nclick="|FormDireccionEditable(${Direccion.IdDireccion})|" th:></i></button>
                                                 <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
                                             </td>
                                         </tr>
@@ -213,33 +213,33 @@
                             </div>
                             <div class="modal-body">
 
-                                <form action="" method="post" class="needs-validation" novalidate>
+                                <form th:action="@{/usuario/addDireccion}" th:object="${Direccion}" method="POST" class="needs-validation" novalidate>
 
                                     <input type="hidden" name="idUsuario" th:value="${usuario.IdUsuario}" />
-                                    <input type="hidden" name="idDireccion" id="idDireccionHidden" value="" />
+                                    <input type="hidden" name="idDireccion" th:value="*{IdDIreccion}" th:field="*{IdDireccion}" />
 
                                     <h5 class="mb-3 text-secondary">Datos de la Dirección</h5>
 
                                     <div class="row mb-4 g-4">
                                         <div class="col-md-3">
                                             <label for="calle" class="form-label">Calle</label>
-                                            <input type="text" class="form-control" id="calle" name="calle" placeholder="Nombre de la calle" required>
+                                            <input type="text" class="form-control" id="calle" th:field="*{Calle}" name="calle" placeholder="Nombre de la calle" required>
                                         </div>
 
                                         <div class="col-md-3">
                                             <label for="numeroExterior" class="form-label">Número Exterior</label>
-                                            <input type="text" class="form-control" id="numeroExterior" name="numeroExterior" placeholder="Ej: 45" required>
+                                            <input type="text" class="form-control" id="numeroExterior" th:field="*{NumeroExterior}" name="numeroExterior" placeholder="Ej: 45" required>
                                         </div>
 
                                         <div class="col-md-3">
                                             <label for="numeroInterior" class="form-label">Número Interior</label>
-                                            <input type="text" class="form-control" id="numeroInterior" name="numeroInterior" placeholder="Ej: B">
+                                            <input type="text" class="form-control" id="numeroInterior" th:field="*{NumeroIneterior}" name="numeroInterior" placeholder="Ej: B">
                                         </div>
 
                                         <div class="col-md-3">
                                             <label for="CodigoPostal" class="form-label">Código Postal</label>
                                             <select class="form-select" id="ddlCodigoPostal">
-                                                <option value="0" selected>Seleccione un Código Postal</option>
+                                                <option selected>Seleccione un Código Postal</option>
                                             </select>
                                         </div>
                                     </div>
@@ -267,7 +267,7 @@
                                             <label class="form-label">País</label>
                                             <select id="ddlPais" class="form-select" >
                                                 <option value="0" selected>Selecciona algún País</option>
-                                                <option th:each="pais : ${Paises}" th:value="${pais.IdPais}" th:text="${pais.Nombre}"></option>
+                                                <option th:each="pais : ${paises}" th:value="${pais.IdPais}" th:text="${pais.Nombre}"></option>
                                             </select>
                                         </div>
                                     </div>
@@ -294,6 +294,29 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
+        
+        <<script>
+            function FormDireccionEditable(IdDireccion){
+                $("#modalDireccion").modal("show");
+                let direccion;
+                $.ajax({
+                    url:"http://localhost:8080/api/direccion/id?IdDireccion="+idDireccion,
+                    type: "GET",
+                    datatype:"json",
+                    success: function(data,textStatus,jqXHR){
+                        direccion = data.object;
+                        $("#IdDireccion").val(Direccion.IdDireccion);
+                        $("#IdCalle").val(Direccion.Calle);
+                        $("#IdNumeroInteror").val(Direccion.NumeroInterior);
+                        $("#IdnumeroExterior").val(Direccion.NumeroExterior);
+                        $("#IdColonia").val(Direccion.colonia.IdColonia);
+                    },
+                    error:function(jqXHR, textStatus,errorThrown){
+                        console.error("Error al cargar direccion");
+                    }
+                });
+            }
+        </script>
 
     </body>
 </html>

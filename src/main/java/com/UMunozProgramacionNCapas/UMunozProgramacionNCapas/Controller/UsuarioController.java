@@ -8,11 +8,13 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Pais;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Rol;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Usuario;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.Base64;
 import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -36,13 +38,24 @@ public class UsuarioController {
     private static final String urlBase = "http://localhost:8080/";
 
     @GetMapping
-    public String GetAll(Model model) {
+    public String GetAll(Model model, HttpSession session) {
 
         RestTemplate restTemplate = new RestTemplate();
 
+        String token = (String) session.getAttribute(("JWT_TOKEN"));
+        
+        if (token == null) {
+            model.addAttribute("errorMessage", "Debe iniciar sesion para acceder");
+            return "login";
+        }
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        
         ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario",
                 HttpMethod.GET,
-                HttpEntity.EMPTY,
+                entity,
                 new ParameterizedTypeReference<Result<List<Usuario>>>() {
                 });
 
@@ -52,7 +65,6 @@ public class UsuarioController {
         } else {
             model.addAttribute("errorMessage", "fallo");
         }
-        // model.addAttribute("usuarioBusqueda", new Usuario());
         return "index";
     }
 
@@ -157,7 +169,7 @@ public class UsuarioController {
             Usuario usuario = new Usuario();
             model.addAttribute("usuario", usuario);
         } catch (Exception ex) {
-            result.Correct = false;
+            result.correct = false;
         }
 
         return "usuarioForm";
@@ -199,7 +211,7 @@ public class UsuarioController {
 
         } catch (Exception ex) {
             model.addAttribute("errorMessage", ex.getMessage());
-            result.ErrorMessage = ex.getMessage();
+            result.errorMessage = ex.getMessage();
             return "UsuarioForm";
         }
 
@@ -284,7 +296,7 @@ public class UsuarioController {
             }
 
         } catch (Exception ex) {
-            result.Correct = false;
+            result.correct = false;
             result.ex = ex;
         }
         return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
@@ -312,9 +324,9 @@ public class UsuarioController {
             }
 
         } catch (Exception ex) {
-            result.Correct = false;
-            result.ErrorMessage = ex.getMessage();
-            model.addAttribute("errorMessage", result.ErrorMessage);
+            result.correct = false;
+            result.errorMessage = ex.getMessage();
+            model.addAttribute("errorMessage", result.errorMessage);
         }
 
         return ("redirect:/usuario/detail/?IdUsuario=" + IdUsuario);
@@ -337,7 +349,7 @@ public class UsuarioController {
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         } else {
-            result.Correct = false;
+            result.correct = false;
         }
 
         return result;
@@ -383,7 +395,7 @@ public class UsuarioController {
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         } else {
-            result.Correct = false;
+            result.correct = false;
         }
 
         return result;
@@ -442,7 +454,7 @@ public class UsuarioController {
     // }
     // Result result = usuarioDAOImplementation.CargaMasiva(usuarios);
     //
-    // if (result.Correct) {
+    // if (result.correct) {
     // model.addAttribute("successMessage", "Carga masiva resalizado
     // correctamente");
     // model.addAttribute("usuariosIngresados", usuarios);

@@ -1,5 +1,6 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,8 +14,7 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 @Controller
 public class LoginController {
 
-    RestTemplate restTemplate = new RestTemplate();
-
+    private final RestTemplate restTemplate = new RestTemplate();
     private final static String urlBase = "http://localhost:8080/";
 
     @GetMapping("/login")
@@ -24,30 +24,44 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String Login(Usuario usuarioForm, Model model) {
+    public String Login(Usuario usuarioForm, Model model, HttpSession session) {
 
         try {
-            HttpEntity<Usuario> request = new HttpEntity<>(usuarioForm);
+            // Headers JSON
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Usuario> request = new HttpEntity<>(usuarioForm, headers);
 
             ResponseEntity<Result> response = restTemplate.exchange(
-                    "http://localhost:8080/api/login", 
+                    urlBase + "api/login",
                     HttpMethod.POST,
                     request,
-                    Result.class);
+                    Result.class
+            );
 
             Result result = response.getBody();
 
-            if (result != null && result.Correct) { 
-                return "redirect:/usuario"; 
-            } else {
-                model.addAttribute("error", "Usuario o contraseña incorrectos");
+            if (result != null && result.correct) {
+                String token = result.Object.toString();
+                session.setAttribute("token", token);
+
+                return "redirect:/usuario";
+            }
+            else {
+                model.addAttribute("error", 
+                        result != null 
+                        ? result.errorMessage 
+                        : "Usuario o contraseña incorrectos");
+
+                model.addAttribute("usuario", new Usuario()); 
                 return "login";
             }
 
         } catch (Exception ex) {
             model.addAttribute("error", "No se pudo conectar al API");
+            model.addAttribute("usuario", new Usuario()); 
             return "login";
         }
     }
-
 }

@@ -31,6 +31,8 @@ public class Usuario {
     private String Imagen;
 
     private boolean Status;
+    
+    private String token;
 
     public Rol rol;
 
@@ -162,6 +164,15 @@ public class Usuario {
     public void setStatus(boolean Status) {
         this.Status = Status;
     }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+    
     
 
 }
