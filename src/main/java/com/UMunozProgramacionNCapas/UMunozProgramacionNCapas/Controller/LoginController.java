@@ -13,7 +13,6 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 @Controller
 public class LoginController {
 
-    private final String urlApi = "http://localhost:8080/api/login";
     RestTemplate restTemplate = new RestTemplate();
 
     private final static String urlBase = "http://localhost:8080/";
