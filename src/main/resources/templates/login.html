@@ -30,14 +30,12 @@
                     <div class="card text-white">
                         <div class="card-body p-5 text-center">
 
-                            <!-- Formulario vinculado al objeto 'usuario' -->
-                            <form th:action="@{/login}" method="post" th:object="${usuario}">
+                            <form th:action="@{/login}" method="POST" th:object="${usuario}">
 
                                 <i class="fas fa-user-circle fa-3x text-info mb-4"></i>
                                 <h2 class="fw-bold mb-2">Inicio de Sesión</h2>
                                 <p class="text-white-50 mb-4">Ingresa tus datos para continuar.</p>
 
-                                <!-- Mensaje de error dinámico -->
                                 <div th:if="${error}" class="alert alert-danger">
                                     <span th:text="${error}"></span>
                                 </div>

@@ -1,66 +1,86 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
 
+import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.LoginDTO;
+import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.core.ParameterizedTypeReference; 
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
-
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Usuario;
-import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 
 @Controller
 public class LoginController {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final static String urlBase = "http://localhost:8080/";
+    private final String urlBase = "http://localhost:8080/"; 
 
     @GetMapping("/login")
     public String loginForm(Model model) {
-        model.addAttribute("usuario", new Usuario());
+        model.addAttribute("usuario", new LoginDTO()); 
         return "login";
     }
 
     @PostMapping("/login")
-    public String Login(Usuario usuarioForm, Model model, HttpSession session) {
-
+    public String Login(@ModelAttribute("usuario") LoginDTO loginForm, Model model, HttpSession session) {
+        
         try {
-            // Headers JSON
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            HttpEntity<Usuario> request = new HttpEntity<>(usuarioForm, headers);
+            HttpEntity<LoginDTO> request = new HttpEntity<>(loginForm, headers);
 
-            ResponseEntity<Result> response = restTemplate.exchange(
+            // Consumimos el API
+            ResponseEntity<Result<LoginDTO>> response = restTemplate.exchange(
                     urlBase + "api/login",
                     HttpMethod.POST,
                     request,
-                    Result.class
+                    new ParameterizedTypeReference<Result<LoginDTO>>() {} 
             );
 
-            Result result = response.getBody();
+            Result<LoginDTO> result = response.getBody();
 
             if (result != null && result.correct) {
-                String token = result.Object.toString();
-                session.setAttribute("token", token);
+                
+                LoginDTO dataResponse = result.Object; 
+                
+                // Guardamos datos en sesión para uso posterior
+                session.setAttribute("JWT_TOKEN", dataResponse.getToken());
+                session.setAttribute("role", dataResponse.getRole());
+                session.setAttribute("usuario", dataResponse.getUserName());
 
-                return "redirect:/usuario";
-            }
-            else {
-                model.addAttribute("error", 
-                        result != null 
-                        ? result.errorMessage 
-                        : "Usuario o contraseña incorrectos");
+                // --- LÓGICA DE REDIRECCIÓN AQUI ---
+                // Leemos la URL que calculó el API (AuthController)
+                String urlDestino = dataResponse.getRedirectUrl();
 
-                model.addAttribute("usuario", new Usuario()); 
-                return "login";
-            }
+                
+                if (urlDestino != null && !urlDestino.isEmpty()) {
+                    
+                    return "redirect:" + urlDestino;
+                } else {
+                    // Fallback si no hay URL
+                    return "redirect:/usuario";
+                }
+            } 
+            
+            
+            String msg = (result != null && result.errorMessage != null) ? result.errorMessage : "Credenciales incorrectas";
+            model.addAttribute("error", msg);
+            model.addAttribute("usuario", loginForm); 
+            return "login";
 
+        } catch (HttpClientErrorException ex) {
+            model.addAttribute("error", "Usuario o contraseña inválidos.");
+            model.addAttribute("usuario", loginForm); 
+            return "login";
+            
         } catch (Exception ex) {
-            model.addAttribute("error", "No se pudo conectar al API");
-            model.addAttribute("usuario", new Usuario()); 
+            model.addAttribute("error", "Error de conexión: " + ex.getMessage());
+            model.addAttribute("usuario", loginForm); 
             return "login";
         }
     }
