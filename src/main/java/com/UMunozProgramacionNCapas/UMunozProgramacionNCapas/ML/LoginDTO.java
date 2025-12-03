@@ -9,6 +9,7 @@ public class LoginDTO {
     // Salidas (Respuesta del servidor)
     private String token;
     private String role;
+    private String redirectUrl;
 
     // Getters y Setters
     public String getUserName() {
@@ -42,4 +43,13 @@ public class LoginDTO {
     public void setRole(String role) {
         this.role = role;
     }
+
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+
+    public void setRedirectUrl(String redirectUrl) {
+        this.redirectUrl = redirectUrl;
+    }
+
 }
