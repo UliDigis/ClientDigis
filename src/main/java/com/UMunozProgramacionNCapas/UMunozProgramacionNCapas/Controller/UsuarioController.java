@@ -281,7 +281,7 @@ public class UsuarioController {
 
         RestTemplate restTemplate = new RestTemplate();
         Result result = new Result();
-
+        
         try {
 
             if (imagenFile != null && !imagenFile.isEmpty()) {
@@ -301,7 +301,23 @@ public class UsuarioController {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
             HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
-
+            
+            EmailRequest emailRequest = new EmailRequest();
+            
+            HttpHeaders headersEmail = new HttpHeaders();
+            headersEmail.setBearerAuth(token);
+            HttpEntity<EmailRequest> entityEmail = new HttpEntity<>(emailRequest, headersEmail);
+            
+            emailRequest.setTo(usuario.getEmail());
+            emailRequest.setSubject("Correo para la verificacion de cuenta");
+            emailRequest.setBody("Cuerpo del mensaje");
+            
+            ResponseEntity<Result<List<EmailRequest>>> responseEmail = restTemplate.exchange(urlBase + "api/email/send",
+                    HttpMethod.POST,
+                    entityEmail,
+                    new ParameterizedTypeReference<Result<List<EmailRequest>>>() {
+            });
+            
             ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/add",
                     HttpMethod.POST, entity,
                     new ParameterizedTypeReference<Result<List<Usuario>>>() {
