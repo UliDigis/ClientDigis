@@ -10,6 +10,7 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Rol;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Usuario;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.constraints.Email;
 
 import java.util.Base64;
 import java.util.List;
@@ -17,6 +18,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -57,7 +59,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Usuario>>>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().value() == 200) {
                 Result result = responseEntity.getBody();
@@ -97,21 +99,21 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
-            });
+                    });
 
             ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange(
                     urlBase + "api/rol",
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Rol>>>() {
-            });
+                    });
 
             ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange(
                     urlBase + "api/pais",
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()
                     && responseEntityRol.getStatusCode().is2xxSuccessful()
@@ -156,7 +158,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<Direccion>>() {
-            });
+                    });
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody().Object;
@@ -190,7 +192,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
-            });
+                    });
             if (responseEntityPais.getStatusCode().value() == 200) {
                 result = responseEntityPais.getBody();
                 model.addAttribute("paises", result.Object);
@@ -200,7 +202,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Rol>>>() {
-            });
+                    });
 
             if (responseEntityRol.getStatusCode().value() == 200) {
                 result = responseEntityRol.getBody();
@@ -251,7 +253,7 @@ public class UsuarioController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 model.addAttribute("successMessage", "Correo enviado");
@@ -274,16 +276,13 @@ public class UsuarioController {
             Model model, HttpSession session) {
 
         String token = (String) session.getAttribute("JWT_TOKEN");
-
         if (token == null) {
             return "redirect:/login";
         }
 
         RestTemplate restTemplate = new RestTemplate();
-        Result result = new Result();
-        
-        try {
 
+        try {
             if (imagenFile != null && !imagenFile.isEmpty()) {
                 String nombre = imagenFile.getOriginalFilename();
                 String ext = nombre.substring(nombre.lastIndexOf('.') + 1);
@@ -291,52 +290,64 @@ public class UsuarioController {
                     model.addAttribute("Error", "Formato de imagen no válido (solo JPG y PNG)");
                     return "UsuarioForm";
                 }
-
                 String base64 = Base64.getEncoder().encodeToString(imagenFile.getBytes());
                 usuario.setImagen(base64);
             }
 
+            // Deja pendiente; el backend marcará verificado tras el enlace
             usuario.setStatus(true);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
             HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
-            
+
+            ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange(
+                    urlBase + "api/usuario/add",
+                    HttpMethod.POST,
+                    entity,
+                    new ParameterizedTypeReference<Result<Usuario>>() {
+                    });
+
+            if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
+                model.addAttribute("errorMessage", "No se pudo crear el usuario");
+                return "UsuarioForm";
+            }
+
+            Usuario usuarioCreado = responseEntity.getBody().Object;
+            if (usuarioCreado == null || usuarioCreado.getToken() == null || usuarioCreado.getToken().isEmpty()) {
+                model.addAttribute("errorMessage", "No se recibió token de verificación");
+                return "UsuarioForm";
+            }
+
+            // URL del cliente con token en query
+            String verifyUrl = "http://localhost:8081/verify?token=" + usuarioCreado.getToken();
+
             EmailRequest emailRequest = new EmailRequest();
-            
+            emailRequest.setTo(usuarioCreado.getEmail());
+            emailRequest.setSubject("Verifica tu cuenta");
+            emailRequest.setBody("Haz clic en el siguiente enlace para verificar tu cuenta: " + verifyUrl);
+
             HttpHeaders headersEmail = new HttpHeaders();
             headersEmail.setBearerAuth(token);
+            headersEmail.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<EmailRequest> entityEmail = new HttpEntity<>(emailRequest, headersEmail);
-            
-            emailRequest.setTo(usuario.getEmail());
-            emailRequest.setSubject("Correo para la verificacion de cuenta");
-            emailRequest.setBody("Cuerpo del mensaje");
-            
-            ResponseEntity<Result<List<EmailRequest>>> responseEmail = restTemplate.exchange(urlBase + "api/email/send",
+
+            restTemplate.exchange(
+                    urlBase + "api/email/send",
                     HttpMethod.POST,
                     entityEmail,
-                    new ParameterizedTypeReference<Result<List<EmailRequest>>>() {
-            });
-            
-            ResponseEntity<Result<List<Usuario>>> responseEntity = restTemplate.exchange(urlBase + "api/usuario/add",
-                    HttpMethod.POST, entity,
-                    new ParameterizedTypeReference<Result<List<Usuario>>>() {
-            });
+                    new ParameterizedTypeReference<Result>() {
+                    });
 
-            if (responseEntity.getStatusCode().value() == 201) {
-                return "redirect:/usuario";
-            }
+            return "redirect:/usuario";
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
             return "redirect:/login";
         } catch (Exception ex) {
             model.addAttribute("errorMessage", ex.getMessage());
-            result.errorMessage = ex.getMessage();
             return "UsuarioForm";
         }
-
-        return "UsuarioForm";
     }
 
     @PostMapping("/addDireccion")
@@ -372,7 +383,7 @@ public class UsuarioController {
                     method,
                     entity,
                     new ParameterizedTypeReference<Result<List<Direccion>>>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String mensaje = IdDireccion == 0 ? "agregada" : "actualizada";
@@ -442,7 +453,7 @@ public class UsuarioController {
                     HttpMethod.PUT,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().value() == 200) {
                 result = responseEntity.getBody();
@@ -481,7 +492,7 @@ public class UsuarioController {
                     HttpMethod.PUT,
                     entity,
                     new ParameterizedTypeReference<Result<List<Direccion>>>() {
-            });
+                    });
 
             if (responseEntity.getStatusCode().value() == 200 || IdUsuario > 0) {
 
@@ -518,7 +529,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Pais>>>() {
-        });
+                });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
@@ -546,7 +557,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Estado>>>() {
-        });
+                });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
@@ -572,7 +583,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Municipio>>>() {
-        });
+                });
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         } else {
@@ -599,7 +610,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Colonia>>>() {
-        });
+                });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
