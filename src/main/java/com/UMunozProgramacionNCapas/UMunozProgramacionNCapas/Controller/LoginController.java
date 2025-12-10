@@ -5,6 +5,13 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Result;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +19,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @Controller
 public class LoginController {
@@ -26,7 +35,7 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String Login(@ModelAttribute("usuario") LoginDTO loginForm, Model model, HttpSession session) {
+    public String login(@ModelAttribute("usuario") LoginDTO loginForm, Model model, HttpSession session) {
 
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -39,8 +48,7 @@ public class LoginController {
                     HttpMethod.POST,
                     request,
                     new ParameterizedTypeReference<Result<LoginDTO>>() {
-            }
-            );
+                    });
 
             Result<LoginDTO> result = response.getBody();
 
@@ -52,12 +60,31 @@ public class LoginController {
                 session.setAttribute("SESSION_ROLE", dataResponse.getRole());
                 session.setAttribute("SESSION_USER", dataResponse.getUserName());
 
-                return "redirect:" + dataResponse.getRedirectUrl();
+                String rawRole = dataResponse.getRole() == null ? "" : dataResponse.getRole();
+                String normalized = rawRole.toUpperCase();
+                if (!normalized.startsWith("ROLE_")) {
+                    normalized = "ROLE_" + normalized;
+                }
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(normalized));
+                Authentication auth = new UsernamePasswordAuthenticationToken(
+                        dataResponse.getUserName(),
+                        null,
+                        authorities);
+
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                context.setAuthentication(auth);
+                SecurityContextHolder.setContext(context);
+                session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
+
+                String redirect = (dataResponse.getRedirectUrl() != null && !dataResponse.getRedirectUrl().isEmpty())
+                        ? dataResponse.getRedirectUrl()
+                        : "/usuario";
+                return "redirect:" + redirect;
             }
 
             String msg = (result != null && result.errorMessage != null)
-                    ? result.errorMessage : "Credenciales incorrectas";
-
+                    ? result.errorMessage
+                    : "Credenciales incorrectas";
             model.addAttribute("error", msg);
             model.addAttribute("usuario", loginForm);
             return "login";
@@ -73,5 +100,4 @@ public class LoginController {
             return "login";
         }
     }
-
 }
