@@ -39,7 +39,8 @@ public class LoginController {
                     HttpMethod.POST,
                     request,
                     new ParameterizedTypeReference<Result<LoginDTO>>() {
-                    });
+            }
+            );
 
             Result<LoginDTO> result = response.getBody();
 
@@ -48,15 +49,15 @@ public class LoginController {
                 LoginDTO dataResponse = result.Object;
 
                 session.setAttribute("JWT_TOKEN", dataResponse.getToken());
-                session.setAttribute("role", dataResponse.getRole());
-                session.setAttribute("usuario", dataResponse.getUserName());
+                session.setAttribute("SESSION_ROLE", dataResponse.getRole());
+                session.setAttribute("SESSION_USER", dataResponse.getUserName());
 
                 return "redirect:" + dataResponse.getRedirectUrl();
-
             }
 
-            String msg = (result != null && result.errorMessage != null) ? result.errorMessage
-                    : "Credenciales incorrectas";
+            String msg = (result != null && result.errorMessage != null)
+                    ? result.errorMessage : "Credenciales incorrectas";
+
             model.addAttribute("error", msg);
             model.addAttribute("usuario", loginForm);
             return "login";
@@ -72,4 +73,5 @@ public class LoginController {
             return "login";
         }
     }
+
 }
