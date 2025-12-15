@@ -3,31 +3,32 @@
     xmlns:th="http://www.thymeleaf.org"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
     layout:decorate="~{layout}"
-    >
+>
     <head>
         <title>Detalle del Usuario</title>
     </head>
+
     <body>
         <div class="container my-5" layout:fragment="contenido">
             <h1 class="mb-4 text-center">Detalle del Usuario</h1>
 
-            <div class="row g-4" th:each="usuario, usuarioStat : ${usuario}">
-                <!-- Informacion del Usuario -->
+            <div class="row g-4">
                 <div class="col-lg-4 col-12">
                     <div class="card shadow-sm h-100">
                         <div class="text-center my-4">
                             <div
                                 class="d-inline-block border rounded-circle p-1 shadow-sm"
                                 style="background-color: #f8f9fa"
-                                >
+                            >
                                 <img
+                                    id="imgUsuarioMain"
                                     th:src="'data:image/jpeg;base64,' + ${usuario.Imagen}"
                                     alt="Foto del usuario"
                                     class="rounded-circle img-fluid"
                                     style="width: 150px; height: 150px; object-fit: cover"
-                                    />
+                                />
                             </div>
-                            <h5 class="mt-3 text-secondary" th:text="${usuario.nombre}">
+                            <h5 class="mt-3 text-secondary" th:text="${usuario.Nombre}">
                                 Nombre del Usuario
                             </h5>
                         </div>
@@ -35,9 +36,7 @@
                         <div class="card-body">
                             <h5 class="card-subtitle mb-3 text-muted">Información General</h5>
                             <ul class="list-group list-group-flush mb-4">
-                                <li
-                                    class="list-group-item d-flex justify-content-between align-items-start"
-                                    >
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto">
                                         <div class="fw-bold">Nombre Completo</div>
                                         <span th:text="${usuario.Nombre}"></span>
@@ -45,23 +44,17 @@
                                         <span th:text="${usuario.ApellidoMaterno}"></span>
                                     </div>
                                 </li>
-                                <li
-                                    class="list-group-item d-flex justify-content-between align-items-start"
-                                    >
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto">
                                         <div class="fw-bold">Correo Electrónico</div>
                                         <span th:text="${usuario.Email}"></span>
                                     </div>
                                 </li>
-                                <li
-                                    class="list-group-item d-flex justify-content-between align-items-start"
-                                    >
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
                                     <div class="ms-2 me-auto">
                                         <div class="fw-bold">Teléfono / Celular</div>
-                                        <i class="bi bi-telephone-fill me-2"></i
-                                        ><span th:text="${usuario.Telefono}"></span><br />
-                                        <i class="bi bi-phone-fill me-2"></i
-                                        ><span th:text="${usuario.Celular}"></span>
+                                        <i class="bi bi-telephone-fill me-2"></i><span th:text="${usuario.Telefono}"></span><br />
+                                        <i class="bi bi-phone-fill me-2"></i><span th:text="${usuario.Celular}"></span>
                                     </div>
                                 </li>
                             </ul>
@@ -72,16 +65,14 @@
                                     class="btn btn-primary"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalModificarUsuario"
-                                    >
+                                >
                                     <i class="bi bi-pencil-square me-2"></i>Modificar Datos
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Informacion del Usuario -->
 
-                <!-- Direccion -->
                 <div class="col-lg-8 col-12">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-primary text-white">
@@ -89,6 +80,7 @@
                                 <i class="bi bi-geo-alt-fill me-2"></i>Direcciones Asignadas
                             </h5>
                         </div>
+
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle">
@@ -98,45 +90,43 @@
                                             <th scope="col" class="text-center">Acciones</th>
                                         </tr>
                                     </thead>
+
                                     <tbody>
                                         <tr th:each="direccion : ${usuario.Direcciones}">
                                             <td>
                                                 <div class="fw-bold">
-                                                    <span th:text="${direccion.Calle}"
-                                                          >Calle no disponible</span
-                                                    >
+                                                    <span th:text="${direccion.Calle}">Calle no disponible</span>
                                                     <span th:text="${direccion.NumeroExterior}">-</span>
                                                 </div>
                                                 <small class="text-muted">
                                                     Colonia:
-                                                    <span
-                                                        th:text="${direccion.colonia != null ? direccion.colonia.Nombre : 'N/D'}"
-                                                        ></span
-                                                    ><br />
+                                                    <span th:text="${direccion.colonia != null ? direccion.colonia.Nombre : 'N/D'}"></span><br />
                                                     Mpo/Edo:
                                                     <span
                                                         th:text="${direccion.colonia != null && direccion.colonia.municipio != null ? direccion.colonia.municipio.Nombre : 'N/D'}"
-                                                        ></span
-                                                    >,
+                                                    ></span>,
                                                     <span
                                                         th:text="${direccion.colonia != null && direccion.colonia.municipio != null && direccion.colonia.municipio.estado != null ? direccion.colonia.municipio.estado.Nombre : 'N/D'}"
-                                                        ></span
-                                                    ><br />
+                                                    ></span><br />
                                                     País:
                                                     <span
                                                         th:text="${direccion.colonia != null && direccion.colonia.municipio != null && direccion.colonia.municipio.estado != null && direccion.colonia.municipio.estado.pais != null ? direccion.colonia.municipio.estado.pais.Nombre : 'N/D'}"
-                                                        ></span>
+                                                    ></span>
                                                 </small>
                                             </td>
+
                                             <td class="text-center text-nowrap">
                                                 <button
+                                                    type="button"
                                                     class="btn btn-sm btn-outline-primary me-2"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalDireccion"
-                                                    th:onclick="'FormDireccionEditable(' + ${direccion.IdDireccion} + ')'"
-                                                    >
-                                                    <i class="bi bi-pencil"></i></button
-                                                ><button class="btn btn-sm btn-outline-danger">
+                                                    th:attr="onclick=|FormDireccionEditable(${direccion.IdDireccion})|"
+                                                >
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+
+                                                <button type="button" class="btn btn-sm btn-outline-danger">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </td>
@@ -144,56 +134,87 @@
                                     </tbody>
                                 </table>
                             </div>
+
                             <div class="d-grid d-md-block mt-3">
                                 <button
                                     type="button"
                                     class="btn btn-success"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalDireccion"
-                                    >
+                                    onclick="FormDireccionNueva()"
+                                >
                                     <i class="bi bi-plus-circle-fill me-2"></i>Agregar Dirección
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- Direccion -->
 
-                <!-- Modal Editar Usuario -->
+                <!-- MODAL MODIFICAR USUARIO -->
                 <div
                     class="modal fade"
                     id="modalModificarUsuario"
                     tabindex="-1"
                     aria-labelledby="modalModificarUsuarioLabel"
                     aria-hidden="true"
-                    >
+                >
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title" id="modalModificarUsuarioLabel">
-                                    <i class="bi bi-person-lines-fill me-2"></i>Modificar Datos de
-                                    Usuario
+                                    <i class="bi bi-person-lines-fill me-2"></i>Modificar Datos de Usuario
                                 </h5>
                                 <button
                                     type="button"
                                     class="btn-close btn-close-white"
                                     data-bs-dismiss="modal"
                                     aria-label="Close"
-                                    ></button>
+                                ></button>
                             </div>
+
                             <div class="modal-body">
                                 <form
                                     th:action="@{/usuario/update}"
                                     method="post"
                                     th:object="${usuario}"
+                                    enctype="multipart/form-data"
                                     class="needs-validation"
                                     novalidate
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="idUsuario"
-                                        th:field="*{IdUsuario}"
-                                        />
+                                >
+                                    <input type="hidden" th:field="*{IdUsuario}" />
+
+                                    <!-- EDITAR IMAGEN -->
+                                    <div class="row g-3 align-items-center mb-3">
+                                        <div class="col-md-3 text-center">
+                                            <div
+                                                class="d-inline-block border rounded-circle p-1 shadow-sm"
+                                                style="background-color:#f8f9fa"
+                                            >
+                                                <img
+                                                    id="imgUsuarioPreview"
+                                                    th:src="'data:image/jpeg;base64,' + ${usuario.Imagen}"
+                                                    alt="Preview"
+                                                    class="rounded-circle img-fluid"
+                                                    style="width:120px;height:120px;object-fit:cover"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-9">
+                                            <label for="ImagenFile" class="form-label">Foto de usuario</label>
+                                            <input
+                                                class="form-control"
+                                                type="file"
+                                                id="ImagenFile"
+                                                name="ImagenFile"
+                                                accept="image/png,image/jpeg,image/jpg"
+                                            />
+                                            <div class="form-text">
+                                                Formatos: JPG/PNG. (Opcional) Si no seleccionas una imagen, se mantiene la actual.
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="row mb-3 g-3">
                                         <div class="col-md-4">
                                             <label for="username" class="form-label">Username</label>
@@ -201,98 +222,81 @@
                                                 type="text"
                                                 class="form-control"
                                                 id="username"
-                                                name="userName"
                                                 th:field="*{UserName}"
                                                 required
                                                 placeholder="Example123"
-                                                />
+                                            />
                                         </div>
+
                                         <div class="col-md-4">
                                             <label for="nombre" class="form-label">Nombre</label>
                                             <input
                                                 type="text"
                                                 class="form-control"
                                                 id="nombre"
-                                                name="nombre"
                                                 th:field="*{Nombre}"
                                                 required
                                                 placeholder="Nombre"
-                                                />
+                                            />
                                         </div>
+
                                         <div class="col-md-4">
-                                            <label for="apellidoPaterno" class="form-label"
-                                                   >Apellido Paterno</label
-                                            >
+                                            <label for="apellidoPaterno" class="form-label">Apellido Paterno</label>
                                             <input
                                                 type="text"
                                                 class="form-control"
                                                 id="apellidoPaterno"
-                                                name="apellidoPaterno"
                                                 th:field="*{ApellidoPaterno}"
                                                 required
                                                 placeholder="Apellido Paterno"
-                                                />
+                                            />
                                         </div>
                                     </div>
 
                                     <div class="row mb-3 g-3">
                                         <div class="col-md-5">
-                                            <label for="apellidoMaterno" class="form-label"
-                                                   >Apellido Materno</label
-                                            >
+                                            <label for="apellidoMaterno" class="form-label">Apellido Materno</label>
                                             <input
                                                 type="text"
                                                 class="form-control"
                                                 id="apellidoMaterno"
-                                                name="apellidoMaterno"
                                                 th:field="*{ApellidoMaterno}"
                                                 placeholder="Apellido Materno"
-                                                />
+                                            />
                                         </div>
+
                                         <div class="col-md-7">
-                                            <label for="email" class="form-label"
-                                                   >Correo Electrónico</label
-                                            >
+                                            <label for="email" class="form-label">Correo Electrónico</label>
                                             <input
                                                 type="email"
                                                 class="form-control"
                                                 id="email"
-                                                name="email"
                                                 th:field="*{Email}"
                                                 required
                                                 placeholder="Example@correo.com"
-                                                />
+                                            />
                                         </div>
                                     </div>
 
                                     <div class="row mb-3 g-3">
                                         <div class="col-md-4">
                                             <label for="sexo" class="form-label">Sexo</label>
-                                            <select class="form-select" id="sexo" name="sexo">
-                                                <option value="" th:selected="${Sexo == null}">
-                                                    Seleccione...
-                                                </option>
-                                                <option value="M" th:selected="${Sexo == 'M'}">
-                                                    Masculino
-                                                </option>
-                                                <option value="F" th:selected="${Sexo == 'F'}">
-                                                    Femenino
-                                                </option>
+                                            <select class="form-select" id="sexo" name="Sexo">
+                                                <option value="" th:selected="${usuario.Sexo == null}">Seleccione...</option>
+                                                <option value="M" th:selected="${usuario.Sexo != null and usuario.Sexo == 'M'}">Masculino</option>
+                                                <option value="F" th:selected="${usuario.Sexo != null and usuario.Sexo == 'F'}">Femenino</option>
                                             </select>
                                         </div>
 
                                         <div class="col-md-4">
-                                            <label for="fechaNacimiento" class="form-label"
-                                                   >Fecha de Nacimiento</label
-                                            >
+                                            <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
                                             <input
                                                 type="date"
                                                 class="form-control"
                                                 id="fechaNacimiento"
-                                                name="fechaNacimiento"
-                                                th:value="*{FechaNacimiento}"
+                                                th:field="*{FechaNacimiento}"
                                                 required
-                                                />
+                                            />
                                         </div>
 
                                         <div class="col-md-4">
@@ -301,10 +305,9 @@
                                                 type="text"
                                                 class="form-control"
                                                 id="curp"
-                                                name="curp"
                                                 th:field="*{CURP}"
                                                 required
-                                                />
+                                            />
                                         </div>
                                     </div>
 
@@ -315,53 +318,38 @@
                                                 type="tel"
                                                 class="form-control"
                                                 id="telefono"
-                                                name="telefono"
                                                 maxlength="10"
                                                 th:field="*{Telefono}"
                                                 placeholder="Ej: 5551234567"
-                                                />
+                                            />
                                         </div>
+
                                         <div class="col-md-4">
                                             <label for="celular" class="form-label">Celular</label>
                                             <input
                                                 type="tel"
                                                 class="form-control"
                                                 id="celular"
-                                                name="celular"
                                                 maxlength="10"
                                                 th:field="*{Celular}"
                                                 placeholder="Ej: 5587654321"
-                                                />
+                                            />
                                         </div>
+
                                         <div class="col-md-4">
                                             <label for="pNombreRol" class="form-label">Rol</label>
-                                            <select
-                                                class="form-select"
-                                                id="pNombreRol"
-                                                name="rol.idRol"
-                                                required
-                                                >
-                                                <option
-                                                    th:each="rol, rolStat : ${rol}"
-                                                    th:value="${rol.IdRol}"
-                                                    th:text="${rol.nombre}"
-                                                    th:selected="${usuario.rol != null and usuario.rol.idRol == usuario.Rol.IdRol}"
-                                                    ></option>
+                                            <select class="form-select" id="pNombreRol" th:field="*{Rol.IdRol}" required>
+                                                <option th:each="r : ${rol}" th:value="${r.IdRol}" th:text="${r.Nombre}"></option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer px-0 pt-3 border-top">
-                                        <button
-                                            type="button"
-                                            class="btn btn-outline-secondary"
-                                            data-bs-dismiss="modal"
-                                            >
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                             <i class="bi bi-x-circle-fill me-1"></i>Cancelar
                                         </button>
                                         <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-check-circle-fill me-1"></i>Guardar
-                                            Cambios
+                                            <i class="bi bi-check-circle-fill me-1"></i>Guardar Cambios
                                         </button>
                                     </div>
                                 </form>
@@ -369,16 +357,15 @@
                         </div>
                     </div>
                 </div>
-                <!-- Modal Editar Usuario -->
 
-                <!-- Modal Direccion -->
+                <!-- MODAL DIRECCION -->
                 <div
                     class="modal fade"
                     id="modalDireccion"
                     tabindex="-1"
                     aria-labelledby="modalDireccionLabel"
                     aria-hidden="true"
-                    >
+                >
                     <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <div class="modal-header bg-success text-white">
@@ -390,27 +377,20 @@
                                     class="btn-close btn-close-white"
                                     data-bs-dismiss="modal"
                                     aria-label="Close"
-                                    ></button>
+                                ></button>
                             </div>
+
                             <div class="modal-body">
                                 <form
+                                    id="formDireccion"
                                     th:action="@{/usuario/addDireccion}"
                                     th:object="${Direccion}"
                                     method="POST"
                                     class="needs-validation"
                                     novalidate
-                                    >
-                                    <input
-                                        type="hidden"
-                                        name="idUsuario"
-                                        th:value="${usuario.IdUsuario}"
-                                        />
-                                    <input
-                                        type="hidden"
-                                        name="idDireccion"
-                                        th:value="*{IdDireccion}"
-                                        th:field="*{IdDireccion}"
-                                        />
+                                >
+                                    <input type="hidden" name="idUsuario" th:value="${usuario.IdUsuario}" />
+                                    <input type="hidden" id="IdDireccion" th:field="*{IdDireccion}" />
 
                                     <h5 class="mb-3 text-secondary">Datos de la Dirección</h5>
 
@@ -422,45 +402,36 @@
                                                 class="form-control"
                                                 id="calle"
                                                 th:field="*{Calle}"
-                                                name="calle"
                                                 placeholder="Nombre de la calle"
                                                 required
-                                                />
+                                            />
                                         </div>
 
                                         <div class="col-md-3">
-                                            <label for="numeroExterior" class="form-label"
-                                                   >Número Exterior</label
-                                            >
+                                            <label for="numeroExterior" class="form-label">Número Exterior</label>
                                             <input
                                                 type="text"
                                                 class="form-control"
                                                 id="numeroExterior"
                                                 th:field="*{NumeroExterior}"
-                                                name="numeroExterior"
                                                 placeholder="Ej: 45"
                                                 required
-                                                />
+                                            />
                                         </div>
 
                                         <div class="col-md-3">
-                                            <label for="numeroInterior" class="form-label"
-                                                   >Número Interior</label
-                                            >
+                                            <label for="numeroInterior" class="form-label">Número Interior</label>
                                             <input
                                                 type="text"
                                                 class="form-control"
                                                 id="numeroInterior"
                                                 th:field="*{NumeroInterior}"
-                                                name="numeroInterior"
                                                 placeholder="Ej: B"
-                                                />
+                                            />
                                         </div>
 
                                         <div class="col-md-3">
-                                            <label for="CodigoPostal" class="form-label"
-                                                   >Código Postal</label
-                                            >
+                                            <label for="ddlCodigoPostal" class="form-label">Código Postal</label>
                                             <select class="form-select" id="ddlCodigoPostal">
                                                 <option selected>Seleccione un Código Postal</option>
                                             </select>
@@ -469,60 +440,41 @@
 
                                     <div class="row mb-4 g-3">
                                         <div class="col-md-3">
-                                            <label for="colonia" class="form-label">Colonia</label>
-                                            <select
-                                                class="form-select"
-                                                id="ddlColonia"
-                                                name="IdColonia"
-                                                required
-                                                >
-                                                <option value="0" selected>
-                                                    Seleccione una Colonia
-                                                </option>
+                                            <label for="ddlColonia" class="form-label">Colonia</label>
+                                            <select class="form-select" id="ddlColonia" name="IdColonia" required>
+                                                <option value="0" selected>Seleccione una Colonia</option>
                                             </select>
                                         </div>
+
                                         <div class="col-md-3">
-                                            <label class="form-label">Municipio</label>
+                                            <label class="form-label" for="ddlMunicipio">Municipio</label>
                                             <select id="ddlMunicipio" class="form-select">
-                                                <option value="0" selected>
-                                                    Selecciona algún Municipio
-                                                </option>
+                                                <option value="0" selected>Selecciona algún Municipio</option>
                                             </select>
                                         </div>
+
                                         <div class="col-md-3">
-                                            <label class="form-label">Estado</label>
+                                            <label class="form-label" for="ddlEstado">Estado</label>
                                             <select id="ddlEstado" class="form-select">
-                                                <option value="0" selected>
-                                                    Selecciona algún Estado
-                                                </option>
+                                                <option value="0" selected>Selecciona algún Estado</option>
                                             </select>
                                         </div>
+
                                         <div class="col-md-3">
-                                            <label class="form-label">País</label>
+                                            <label class="form-label" for="ddlPais">País</label>
                                             <select id="ddlPais" class="form-select">
-                                                <option value="0" selected>
-                                                    Selecciona algún País
-                                                </option>
-                                                <option
-                                                    th:each="pais : ${paises}"
-                                                    th:value="${pais.IdPais}"
-                                                    th:text="${pais.Nombre}"
-                                                    ></option>
+                                                <option value="0" selected>Selecciona algún País</option>
+                                                <option th:each="pais : ${paises}" th:value="${pais.IdPais}" th:text="${pais.Nombre}"></option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="modal-footer px-0 pt-3 border-top">
-                                        <button
-                                            type="button"
-                                            class="btn btn-outline-secondary"
-                                            data-bs-dismiss="modal"
-                                            >
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                             <i class="bi bi-x-circle-fill me-1"></i>Cancelar
                                         </button>
                                         <button type="submit" class="btn btn-success">
-                                            <i class="bi bi-check-circle-fill me-1"></i>Guardar
-                                            Dirección
+                                            <i class="bi bi-check-circle-fill me-1"></i>Guardar Dirección
                                         </button>
                                     </div>
                                 </form>
@@ -530,7 +482,8 @@
                         </div>
                     </div>
                 </div>
-                <!-- Modal Direccion -->
+                <!-- /MODAL DIRECCION -->
+
             </div>
         </div>
 
@@ -542,28 +495,51 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
         <script>
-            function FormDireccionEditable(IdDireccion) {
-                $("#modalDireccion").modal("show");
-                let direccion;
+            // PREVIEW IMAGEN USUARIO
+            $(document).on("change", "#ImagenFile", function () {
+                const file = this.files && this.files[0] ? this.files[0] : null;
+                if (!file) return;
+
+                const okTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!okTypes.includes(file.type)) {
+                    alert("Solo se permite JPG o PNG.");
+                    $(this).val("");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#imgUsuarioPreview").attr("src", e.target.result);
+                    $("#imgUsuarioMain").attr("src", e.target.result); // opcional: actualiza la de la tarjeta también
+                };
+                reader.readAsDataURL(file);
+            });
+
+            function FormDireccionNueva() {
+                $("#IdDireccion").val("");
+                $("#calle").val("");
+                $("#numeroExterior").val("");
+                $("#numeroInterior").val("");
+                $("#ddlColonia").val("0");
+            }
+
+            function FormDireccionEditable(idDireccion) {
                 $.ajax({
-                    url:
-                            "http://localhost:8080/api/direccion/id?IdDireccion=" + idDireccion,
-                    type: "GET",
-                    datatype: "json",
-                    headers: {
-                        autherization
+                    url: "/api/direccion/id?IdDireccion=" + idDireccion,
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        const d = (data && (data.object || data.Object)) ? (data.object || data.Object) : data;
+
+                        $("#IdDireccion").val(d.IdDireccion ?? "");
+                        $("#calle").val(d.Calle ?? "");
+                        $("#numeroExterior").val(d.NumeroExterior ?? "");
+                        $("#numeroInterior").val(d.NumeroInterior ?? "");
+                        $("#ddlColonia").val(d.colonia?.IdColonia ?? "0");
                     },
-                    success: function (data, textStatus, jqXHR) {
-                        direccion = data.object;
-                        $("#IdDireccion").val(Direccion.IdDireccion);
-                        $("#IdCalle").val(Direccion.Calle);
-                        $("#IdNumeroInteror").val(Direccion.NumeroInterior);
-                        $("#IdnumeroExterior").val(Direccion.NumeroExterior);
-                        $("#IdColonia").val(Direccion.colonia.IdColonia);
-                    },
-                    error: function (jqXHR, textStatus, errorThrown) {
+                    error: function () {
                         console.error("Error al cargar direccion");
-                    },
+                    }
                 });
             }
         </script>

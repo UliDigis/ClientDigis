@@ -1,7 +1,9 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.format.annotation.DateTimeFormat;
 
 public class Usuario {
 
@@ -18,9 +20,11 @@ public class Usuario {
     
     private String Password;
     
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate FechaNacimiento;
     
-    private char Sexo;
+    private Character Sexo;
 
     private String Telefono;
 
@@ -118,11 +122,11 @@ public class Usuario {
         this.FechaNacimiento = FechaNacimiento;
     }
 
-    public char getSexo() {
+    public Character getSexo() {
         return Sexo;
     }
 
-    public void setSexo(char Sexo) {
+    public void setSexo(Character Sexo) {
         this.Sexo = Sexo;
     }
 
@@ -172,9 +176,5 @@ public class Usuario {
     public void setToken(String token) {
         this.token = token;
     }
-
     
-    
-    
-
 }

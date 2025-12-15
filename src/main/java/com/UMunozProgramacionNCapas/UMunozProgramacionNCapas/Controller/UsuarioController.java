@@ -59,7 +59,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Usuario>>>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().value() == 200) {
                 Result result = responseEntity.getBody();
@@ -99,21 +99,24 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
-                    });
+            }
+            );
 
             ResponseEntity<Result<List<Rol>>> responseEntityRol = restTemplate.exchange(
                     urlBase + "api/rol",
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Rol>>>() {
-                    });
+            }
+            );
 
             ResponseEntity<Result<List<Pais>>> responseEntityPais = restTemplate.exchange(
                     urlBase + "api/pais",
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
-                    });
+            }
+            );
 
             if (responseEntity.getStatusCode().is2xxSuccessful()
                     && responseEntityRol.getStatusCode().is2xxSuccessful()
@@ -123,12 +126,20 @@ public class UsuarioController {
                 Result<List<Rol>> resultRol = responseEntityRol.getBody();
                 Result<List<Pais>> resultPais = responseEntityPais.getBody();
 
-                model.addAttribute("usuario", resultUsuario.Object);
-                model.addAttribute("rol", resultRol.Object);
-                model.addAttribute("paises", resultPais.Object);
+                Usuario usuario = (resultUsuario != null) ? resultUsuario.Object : null;
+                List<Rol> roles = (resultRol != null) ? resultRol.Object : null;
+                List<Pais> paises = (resultPais != null) ? resultPais.Object : null;
+
+                model.addAttribute("usuario", usuario);
+                model.addAttribute("rol", roles);
+                model.addAttribute("paises", paises);
                 model.addAttribute("token", token);
+
+                model.addAttribute("Direccion", new Direccion());
+
             } else {
                 model.addAttribute("errorMessage", "Error al cargar los datos");
+                model.addAttribute("Direccion", new Direccion());
             }
 
         } catch (HttpClientErrorException.Unauthorized ex) {
@@ -136,6 +147,7 @@ public class UsuarioController {
             return "redirect:/login";
         } catch (Exception ex) {
             model.addAttribute("errorMessage", "Error: " + ex.getMessage());
+            model.addAttribute("Direccion", new Direccion());
         }
 
         return "UsuarioDetail";
@@ -158,7 +170,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<Direccion>>() {
-                    });
+            });
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody().Object;
@@ -192,7 +204,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Pais>>>() {
-                    });
+            });
             if (responseEntityPais.getStatusCode().value() == 200) {
                 result = responseEntityPais.getBody();
                 model.addAttribute("paises", result.Object);
@@ -202,7 +214,7 @@ public class UsuarioController {
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Result<List<Rol>>>() {
-                    });
+            });
 
             if (responseEntityRol.getStatusCode().value() == 200) {
                 result = responseEntityRol.getBody();
@@ -253,7 +265,7 @@ public class UsuarioController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 model.addAttribute("successMessage", "Correo enviado");
@@ -294,7 +306,6 @@ public class UsuarioController {
                 usuario.setImagen(base64);
             }
 
-            // Deja pendiente; el backend marcará verificado tras el enlace
             usuario.setStatus(true);
 
             HttpHeaders headers = new HttpHeaders();
@@ -306,7 +317,7 @@ public class UsuarioController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
-                    });
+            });
 
             if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
                 model.addAttribute("errorMessage", "No se pudo crear el usuario");
@@ -319,7 +330,6 @@ public class UsuarioController {
                 return "UsuarioForm";
             }
 
-            // URL del cliente con token en query
             String verifyUrl = "http://localhost:8081/verify?token=" + usuarioCreado.getToken();
 
             EmailRequest emailRequest = new EmailRequest();
@@ -337,7 +347,7 @@ public class UsuarioController {
                     HttpMethod.POST,
                     entityEmail,
                     new ParameterizedTypeReference<Result>() {
-                    });
+            });
 
             return "redirect:/usuario";
 
@@ -383,7 +393,7 @@ public class UsuarioController {
                     method,
                     entity,
                     new ParameterizedTypeReference<Result<List<Direccion>>>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 String mensaje = IdDireccion == 0 ? "agregada" : "actualizada";
@@ -432,41 +442,74 @@ public class UsuarioController {
     }
 
     @PostMapping("update")
-    public String Update(@ModelAttribute Usuario usuario, Model model, HttpSession session) {
-
+    public String Update(
+            @ModelAttribute Usuario usuario,
+            @RequestParam(value = "ImagenFile", required = false) org.springframework.web.multipart.MultipartFile imagenFile,
+            HttpSession session
+    ) {
         String token = (String) session.getAttribute("JWT_TOKEN");
-
         if (token == null) {
             return "redirect:/login";
         }
 
         RestTemplate restTemplate = new RestTemplate();
-        Result result = new Result();
 
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
-            HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+            if (imagenFile != null && !imagenFile.isEmpty()) {
+
+                String contentType = imagenFile.getContentType();
+                long size = imagenFile.getSize();
+                if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+                    return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
+                }
+                if (size > 2_000_000) {
+                    return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
+                }
+
+                byte[] bytes = imagenFile.getBytes();
+                String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                usuario.setImagen(base64);
+
+            } else {
+                HttpEntity<Void> entityGet = new HttpEntity<>(headers);
+
+                ResponseEntity<Result<Usuario>> responseGet = restTemplate.exchange(
+                        urlBase + "api/usuario/?id=" + usuario.getIdUsuario(),
+                        HttpMethod.GET,
+                        entityGet,
+                        new ParameterizedTypeReference<Result<Usuario>>() {
+                }
+                );
+
+                if (responseGet.getStatusCode().is2xxSuccessful()
+                        && responseGet.getBody() != null
+                        && responseGet.getBody().Object != null) {
+                    Usuario actual = responseGet.getBody().Object;
+                    usuario.setImagen(actual.getImagen());
+                }
+            }
+
+            HttpEntity<Usuario> entityPut = new HttpEntity<>(usuario, headers);
 
             ResponseEntity<Result> responseEntity = restTemplate.exchange(
                     urlBase + "api/usuario/update/" + usuario.getIdUsuario(),
                     HttpMethod.PUT,
-                    entity,
+                    entityPut,
                     new ParameterizedTypeReference<Result>() {
-                    });
-
-            if (responseEntity.getStatusCode().value() == 200) {
-                result = responseEntity.getBody();
-
             }
+            );
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
             return "redirect:/login";
         } catch (Exception ex) {
-            result.correct = false;
-            result.ex = ex;
+            
         }
+
         return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
     }
 
@@ -492,7 +535,7 @@ public class UsuarioController {
                     HttpMethod.PUT,
                     entity,
                     new ParameterizedTypeReference<Result<List<Direccion>>>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().value() == 200 || IdUsuario > 0) {
 
@@ -529,7 +572,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Pais>>>() {
-                });
+        });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
@@ -557,7 +600,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Estado>>>() {
-                });
+        });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
@@ -583,7 +626,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Municipio>>>() {
-                });
+        });
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
         } else {
@@ -610,7 +653,7 @@ public class UsuarioController {
                 HttpMethod.GET,
                 entity,
                 new ParameterizedTypeReference<Result<List<Colonia>>>() {
-                });
+        });
 
         if (responseEntity.getStatusCode().value() == 200) {
             result = responseEntity.getBody();
