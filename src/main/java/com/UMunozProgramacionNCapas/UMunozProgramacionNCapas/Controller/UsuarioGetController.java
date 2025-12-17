@@ -263,29 +263,72 @@ public class UsuarioGetController {
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         try {
-            var builder = UriComponentsBuilder.fromUriString(urlBase + "api/usuario/search");
-            if (nombre != null && !nombre.isBlank())
-                builder.queryParam("nombre", nombre);
-            if (apellidoPaterno != null && !apellidoPaterno.isBlank())
-                builder.queryParam("apellidoPaterno", apellidoPaterno);
-            if (apellidoMaterno != null && !apellidoMaterno.isBlank())
-                builder.queryParam("apellidoMaterno", apellidoMaterno);
-            if (idRol != null && idRol > 0)
-                builder.queryParam("idRol", idRol);
-            if (status != null)
-                builder.queryParam("status", status);
+            // Normalizar entradas para evitar espacios al inicio/fin en filtros
+            nombre = (nombre != null) ? nombre.trim() : null;
+            apellidoPaterno = (apellidoPaterno != null) ? apellidoPaterno.trim() : null;
+            apellidoMaterno = (apellidoMaterno != null) ? apellidoMaterno.trim() : null;
 
-            ResponseEntity<Result<List<Usuario>>> resp = restTemplate.exchange(
-                    builder.toUriString(),
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<Result<List<Usuario>>>() {
-                    });
+            boolean soloRol = (idRol != null && idRol > 0)
+                    && (nombre == null || nombre.isBlank())
+                    && (apellidoPaterno == null || apellidoPaterno.isBlank())
+                    && (apellidoMaterno == null || apellidoMaterno.isBlank())
+                    && status == null;
+
+            ResponseEntity<Result<List<Usuario>>> resp;
+            if (soloRol) {
+                // El endpoint de búsqueda no está devolviendo resultados solo por rol,
+                // así que pedimos todo y filtramos localmente.
+                resp = restTemplate.exchange(
+                        urlBase + "api/usuario",
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<Result<List<Usuario>>>() {
+                        });
+            } else {
+                var builder = UriComponentsBuilder.fromUriString(urlBase + "api/usuario/search");
+                if (nombre != null && !nombre.isBlank()) {
+                    builder.queryParam("nombre", nombre);
+                }
+                if (apellidoPaterno != null && !apellidoPaterno.isBlank()) {
+                    builder.queryParam("apellidoPaterno", apellidoPaterno);
+                }
+                if (apellidoMaterno != null && !apellidoMaterno.isBlank()) {
+                    builder.queryParam("apellidoMaterno", apellidoMaterno);
+                }
+                if (idRol != null && idRol > 0) {
+                    builder.queryParam("idRol", idRol);
+                }
+                if (status != null) {
+                    builder.queryParam("status", status);
+                }
+
+                resp = restTemplate.exchange(
+                        builder.toUriString(),
+                        HttpMethod.GET,
+                        entity,
+                        new ParameterizedTypeReference<Result<List<Usuario>>>() {
+                        });
+            }
+
             if (resp.getStatusCode().is2xxSuccessful()) {
                 Result<List<Usuario>> r = resp.getBody();
-                model.addAttribute("usuarios", r != null ? r.Object : null);
+                List<Usuario> lista = (r != null && r.Object != null) ? r.Object : java.util.Collections.emptyList();
+                if (idRol != null && idRol > 0) {
+                    List<Usuario> filtrados = new java.util.ArrayList<>();
+                    for (Usuario u : lista) {
+                        if (u != null && u.getRol() != null && u.getRol().getIdRol() == idRol.intValue()) {
+                            filtrados.add(u);
+                        }
+                    }
+                    model.addAttribute("usuarios", filtrados);
+                } else {
+                    model.addAttribute("usuarios", lista);
+                }
+            } else {
+                model.addAttribute("errorMessage", "No se pudieron obtener usuarios");
             }
-            // roles para el select
+
+            // roles para el select (cargar aunque falle la búsqueda)
             ResponseEntity<Result<List<Rol>>> respRol = restTemplate.exchange(
                     urlBase + "api/rol",
                     HttpMethod.GET,
@@ -295,7 +338,10 @@ public class UsuarioGetController {
             if (respRol.getStatusCode().is2xxSuccessful()) {
                 Result<List<Rol>> rRol = respRol.getBody();
                 model.addAttribute("roles", rRol != null ? rRol.Object : null);
+            } else {
+                model.addAttribute("errorMessage", "No se pudieron cargar los roles");
             }
+
             model.addAttribute("token", token);
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();

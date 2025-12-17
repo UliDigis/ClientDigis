@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}">
+      layout:decorate="~{layout}">
 
 <head>
   <title>Gestión de Usuarios</title>
-
   <style>
     .bg-soft-primary { background: rgba(13, 110, 253, .08); }
     .card-elev { box-shadow: 0 12px 28px rgba(0, 0, 0, .08); }
@@ -15,7 +14,6 @@
 </head>
 
 <body class="bg-light" layout:fragment="contenido">
-
   <div class="container py-4">
 
     <!-- Header + acciones -->
@@ -34,15 +32,15 @@
 
           <!-- Toggle filtros -->
           <button id="filtersToggleBtn"
-            class="btn btn-light rounded-pill fw-semibold px-4 d-inline-flex align-items-center gap-2"
-            type="button" aria-controls="filtersPanel" aria-expanded="false">
+                  class="btn btn-light rounded-pill fw-semibold px-4 d-inline-flex align-items-center gap-2"
+                  type="button" aria-controls="filtersPanel" aria-expanded="false">
             <i id="filtersToggleIcon" class="bi bi-funnel"></i>
             <span id="filtersToggleText">Mostrar filtros</span>
           </button>
         </div>
       </div>
 
-      <!-- Resumen rápido (seguro si usuarios == null) -->
+      <!-- Resumen rápido -->
       <div class="p-3 p-md-4 bg-white">
         <div class="row g-3">
           <div class="col-12 col-md-4">
@@ -75,15 +73,14 @@
       </div>
     </div>
 
-    <!-- Filtros (abre automáticamente si hay params) -->
+    <!-- Filtros -->
     <div class="collapse" id="filtersPanel"
-      th:classappend="${(param.nombre != null and param.nombre[0] != '') or
-                      (param.apellidoPaterno != null and param.apellidoPaterno[0] != '') or
-                      (param.apellidoMaterno != null and param.apellidoMaterno[0] != '') or
-                      (param.idRol != null and param.idRol[0] != '') or
-                      (param.status != null and param.status[0] != '')}
-                      ? ' show' : ''">
-
+         th:classappend="${(param.nombre != null and param.nombre[0] != '') or
+                          (param.apellidoPaterno != null and param.apellidoPaterno[0] != '') or
+                          (param.apellidoMaterno != null and param.apellidoMaterno[0] != '') or
+                          (param.idRol != null and param.idRol[0] != '') or
+                          (param.status != null and param.status[0] != '')}
+                          ? ' show' : ''">
       <div class="card border-0 rounded-4 card-elev mb-4">
         <div class="card-body p-4">
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
@@ -104,7 +101,7 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person"></i></span>
                   <input type="text" class="form-control" id="pNombreUsuario" name="nombre"
-                    placeholder="Ej. Carlos" th:value="${param.nombre != null ? param.nombre[0] : ''}">
+                         placeholder="Ej. Carlos" th:value="${param.nombre}">
                 </div>
               </div>
 
@@ -113,7 +110,7 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                   <input type="text" class="form-control" id="pApellidoPaterno" name="apellidoPaterno"
-                    placeholder="Ej. López" th:value="${param.apellidoPaterno != null ? param.apellidoPaterno[0] : ''}">
+                         placeholder="Ej. López" th:value="${param.apellidoPaterno}">
                 </div>
               </div>
 
@@ -122,30 +119,29 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
                   <input type="text" class="form-control" id="pApellidoMaterno" name="apellidoMaterno"
-                    placeholder="Ej. Pérez" th:value="${param.apellidoMaterno != null ? param.apellidoMaterno[0] : ''}">
+                         placeholder="Ej. Pérez" th:value="${param.apellidoMaterno}">
                 </div>
               </div>
 
-              <!-- ✅ ROL (igual que el que funcionaba) -->
               <div class="col-12 col-md-3">
                 <label for="pNombreRol" class="form-label fw-semibold">Rol</label>
-                <select class="form-select form-select-lg" id="pNombreRol" name="idRol">
+                <select class="form-select form-select-lg" id="pNombreRol" name="idRol"
+                        th:value="${param.idRol}">
                   <option value="">Todos los roles</option>
                   <option th:each="rol : ${roles}"
                           th:value="${rol.idRol}"
-                          th:text="${rol.nombre}"
-                          th:selected="${param.idRol != null and param.idRol[0] != '' and param.idRol[0] == rol.idRol.toString()}">
+                          th:text="${rol.nombre}">
                   </option>
                 </select>
               </div>
 
-              <!-- ✅ STATUS (igual que el que funcionaba) -->
               <div class="col-12 col-md-3">
                 <label for="pStatus" class="form-label fw-semibold">Estatus</label>
-                <select class="form-select form-select-lg" id="pStatus" name="status">
+                <select class="form-select form-select-lg" id="pStatus" name="status"
+                        th:value="${param.status}">
                   <option value="">Todos</option>
-                  <option value="true" th:selected="${param.status != null and param.status[0] == 'true'}">Activo</option>
-                  <option value="false" th:selected="${param.status != null and param.status[0] == 'false'}">Inactivo</option>
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
                 </select>
               </div>
 
@@ -165,7 +161,7 @@
       </div>
     </div>
 
-    <!-- Tabla (desktop) + Cards (mobile) -->
+    <!-- Tabla -->
     <div class="card border-0 rounded-4 card-elev overflow-hidden">
       <div class="card-header bg-white border-0 p-4">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -176,7 +172,6 @@
         </div>
       </div>
 
-      <!-- Desktop Table -->
       <div class="d-none d-lg-block table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-dark">
@@ -192,13 +187,12 @@
 
           <tbody>
             <tr th:each="usuario : ${usuarios}">
-              <!-- Usuario: nombre+apellidos y username -->
               <td>
                 <div class="d-flex align-items-center gap-3">
                   <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
-                     'data:image/jpeg;base64,' + usuario.Imagen :
+                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
                      'https://via.placeholder.com/120?text=U'"
-                    alt="Foto usuario" class="rounded-circle avatar shadow-sm">
+                       alt="Foto usuario" class="rounded-circle avatar shadow-sm">
 
                   <div class="min-w-0">
                     <div class="fw-bold text-primary truncate-1">
@@ -213,7 +207,6 @@
                 </div>
               </td>
 
-              <!-- Contacto: correo + tel + cel -->
               <td>
                 <div class="d-flex flex-column gap-1">
                   <div class="d-flex align-items-center gap-2">
@@ -231,7 +224,6 @@
                 </div>
               </td>
 
-              <!-- Direcciones: primera + colapsable -->
               <td style="max-width: 420px;">
                 <div th:if="${usuario.Direcciones != null and !usuario.Direcciones.isEmpty()}">
 
@@ -253,7 +245,7 @@
 
                   <div class="mt-2" th:if="${usuario.Direcciones.size() > 1}">
                     <button class="btn btn-outline-primary btn-sm rounded-pill" type="button" data-bs-toggle="collapse"
-                      th:attr="data-bs-target='#addr-'+${usuario.IdUsuario}, aria-controls='addr-'+${usuario.IdUsuario}">
+                            th:attr="data-bs-target='#addr-'+${usuario.IdUsuario}, aria-controls='addr-'+${usuario.IdUsuario}">
                       <i class="bi bi-chevron-down me-1"></i>
                       Ver <span th:text="${usuario.Direcciones.size() - 1}">0</span> más
                     </button>
@@ -303,14 +295,14 @@
               <td class="text-center">
                 <div class="btn-group" role="group">
                   <a class="btn btn-outline-primary btn-sm"
-                    th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}" data-bs-toggle="tooltip"
-                    data-bs-title="Ver detalle">
+                     th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}" data-bs-toggle="tooltip"
+                     data-bs-title="Ver detalle">
                     <i class="bi bi-eye"></i>
                   </a>
 
                   <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
-                    data-bs-target="#deleteModal"
-                    th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
+                          data-bs-target="#deleteModal"
+                          th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -320,7 +312,7 @@
         </table>
       </div>
 
-      <!-- Mobile cards (simple) -->
+      <!-- Mobile cards -->
       <div class="d-lg-none p-3">
         <div class="row g-3">
           <div class="col-12" th:each="usuario : ${usuarios}">
@@ -329,9 +321,9 @@
 
                 <div class="d-flex align-items-center gap-3">
                   <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
-                     'data:image/jpeg;base64,' + usuario.Imagen :
+                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
                      'https://via.placeholder.com/120?text=U'"
-                    class="rounded-circle avatar" alt="Foto usuario">
+                       class="rounded-circle avatar" alt="Foto usuario">
 
                   <div class="flex-grow-1">
                     <div class="fw-bold text-primary">
@@ -363,12 +355,12 @@
 
                 <div class="d-flex gap-2 mt-3">
                   <a class="btn btn-primary w-100 rounded-pill"
-                    th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
+                     th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
                     <i class="bi bi-eye me-2"></i>Ver
                   </a>
                   <button type="button" class="btn btn-outline-danger w-100 rounded-pill" data-bs-toggle="modal"
-                    data-bs-target="#deleteModal"
-                    th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
+                          data-bs-target="#deleteModal"
+                          th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
                     <i class="bi bi-trash me-2"></i>Eliminar
                   </button>
                 </div>
@@ -406,8 +398,8 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"></script>
+          integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+          crossorigin="anonymous"></script>
 
   <script>
     // Tooltips
@@ -451,6 +443,5 @@
       filtersPanel.addEventListener('hidden.bs.collapse', () => setFiltersBtnState(false));
     }
   </script>
-
 </body>
 </html>
