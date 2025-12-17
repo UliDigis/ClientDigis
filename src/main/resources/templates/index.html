@@ -113,7 +113,7 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
                   <input type="text" class="form-control" id="pApellidoPaterno" name="apellidoPaterno"
-                    placeholder="Ej. López" th:value="${param.apellidoPaterno}">
+                    placeholder="Ej. López" th:value="${param.apellidoPaterno != null ? param.apellidoPaterno[0] : ''}">
                 </div>
               </div>
 
@@ -122,19 +122,19 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
                   <input type="text" class="form-control" id="pApellidoMaterno" name="apellidoMaterno"
-                    placeholder="Ej. Pérez" th:value="${param.apellidoMaterno}">
+                    placeholder="Ej. Pérez" th:value="${param.apellidoMaterno != null ? param.apellidoMaterno[0] : ''}">
                 </div>
               </div>
 
               <!-- ✅ ROL (igual que el que funcionaba) -->
               <div class="col-12 col-md-3">
                 <label for="pNombreRol" class="form-label fw-semibold">Rol</label>
-                <select class="form-select form-select-lg" id="pNombreRol" name="idRol"
-                        th:value="${param.idRol}">
+                <select class="form-select form-select-lg" id="pNombreRol" name="idRol">
                   <option value="">Todos los roles</option>
                   <option th:each="rol : ${roles}"
                           th:value="${rol.idRol}"
-                          th:text="${rol.nombre}">
+                          th:text="${rol.nombre}"
+                          th:selected="${param.idRol != null and param.idRol[0] != '' and param.idRol[0] == rol.idRol.toString()}">
                   </option>
                 </select>
               </div>
@@ -142,11 +142,10 @@
               <!-- ✅ STATUS (igual que el que funcionaba) -->
               <div class="col-12 col-md-3">
                 <label for="pStatus" class="form-label fw-semibold">Estatus</label>
-                <select class="form-select form-select-lg" id="pStatus" name="status"
-                        th:value="${param.status}">
+                <select class="form-select form-select-lg" id="pStatus" name="status">
                   <option value="">Todos</option>
-                  <option value="true">Activo</option>
-                  <option value="false">Inactivo</option>
+                  <option value="true" th:selected="${param.status != null and param.status[0] == 'true'}">Activo</option>
+                  <option value="false" th:selected="${param.status != null and param.status[0] == 'false'}">Inactivo</option>
                 </select>
               </div>
 
@@ -197,7 +196,7 @@
               <td>
                 <div class="d-flex align-items-center gap-3">
                   <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
-                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
+                     'data:image/jpeg;base64,' + usuario.Imagen :
                      'https://via.placeholder.com/120?text=U'"
                     alt="Foto usuario" class="rounded-circle avatar shadow-sm">
 
@@ -330,7 +329,7 @@
 
                 <div class="d-flex align-items-center gap-3">
                   <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
-                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
+                     'data:image/jpeg;base64,' + usuario.Imagen :
                      'https://via.placeholder.com/120?text=U'"
                     class="rounded-circle avatar" alt="Foto usuario">
 
