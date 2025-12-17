@@ -2,80 +2,161 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión - JWT</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar sesión</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 
     <style>
-        .gradient-custom {
-            height: 100vh;
-            background: linear-gradient(135deg, #0072ff, #00c6ff);
+        .auth-bg {
+            min-height: 100vh;
+            background:
+                radial-gradient(1200px 600px at 15% 0%, rgba(13, 110, 253, .18), transparent 60%),
+                radial-gradient(900px 500px at 85% 10%, rgba(32, 201, 151, .12), transparent 55%),
+                linear-gradient(135deg, rgba(13, 110, 253, .08), rgba(255, 255, 255, 1));
         }
 
-        .card {
-            box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.4);
-            background-color: rgba(33, 37, 41, 0.9);
-            border: none;
+        .auth-card {
+            box-shadow: 0 18px 50px rgba(0, 0, 0, .12);
+        }
+
+        .brand-badge {
+            width: 56px;
+            height: 56px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            background: rgba(13, 110, 253, .12);
+            border: 1px solid rgba(13, 110, 253, .15);
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .15);
+        }
+
+        /* Asegura que Bootstrap no meta iconos de validación (por si alguien activa was-validated en otro lado) */
+        .form-control.is-valid,
+        .form-control.is-invalid {
+            background-image: none !important;
+            padding-right: .75rem !important;
         }
     </style>
 </head>
 
-<body>
-    <section class="gradient-custom d-flex align-items-center justify-content-center">
-        <div class="container py-5">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-8 col-lg-5">
+<body class="auth-bg d-flex align-items-center">
 
-                    <div class="card text-white">
-                        <div class="card-body p-5 text-center">
+    <main class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-6 col-xl-5">
 
-                            <form th:action="@{/login}" method="POST" th:object="${usuario}">
+                <div class="card border-0 rounded-4 auth-card overflow-hidden">
+                    <div class="card-body p-4 p-md-5">
 
-                                <i class="fas fa-user-circle fa-3x text-info mb-4"></i>
-                                <h2 class="fw-bold mb-2">Inicio de Sesión</h2>
-                                <p class="text-white-50 mb-4">Ingresa tus datos para continuar.</p>
-
-                                <div th:if="${success}" class="alert alert-success">
-                                    <span th:text="${success}"></span>
-                                </div>
-
-                                <div th:if="${error}" class="alert alert-danger">
-                                    <span th:text="${error}"></span>
-                                </div>
-
-                                <!-- Usuario -->
-                                <div class="form-floating mb-3">
-                                    <input type="text" th:field="*{userName}"
-                                        class="form-control bg-secondary text-white" placeholder="Usuario" required />
-                                    <label>Usuario</label>
-                                </div>
-
-                                <!-- Contraseña -->
-                                <div class="form-floating mb-4">
-                                    <input type="password" th:field="*{password}"
-                                        class="form-control bg-secondary text-white" placeholder="Contraseña"
-                                        required />
-                                    <label>Contraseña</label>
-                                </div>
-
-                                <button type="submit" class="btn btn-outline-info btn-lg w-100">
-                                    Iniciar Sesión
-                                </button>
-
-                            </form>
-
+                        <!-- Header -->
+                        <div class="text-center mb-4">
+                            <div class="brand-badge mx-auto mb-3">
+                                <i class="bi bi-shield-lock-fill fs-3 text-primary"></i>
+                            </div>
+                            <h1 class="h3 fw-bold mb-1">Bienvenido</h1>
+                            <p class="text-muted mb-0">Inicia sesión para continuar al sistema.</p>
                         </div>
-                    </div>
 
+                        <!-- Alerts -->
+                        <div th:if="${success}" class="alert alert-success d-flex align-items-center rounded-4"
+                            role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <div th:text="${success}">Éxito</div>
+                        </div>
+
+                        <div th:if="${error}" class="alert alert-danger d-flex align-items-center rounded-4"
+                            role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div th:text="${error}">Credenciales incorrectas</div>
+                        </div>
+
+                        <!-- Form -->
+                        <form th:action="@{/login}" method="POST" th:object="${usuario}">
+
+                            <!-- Usuario -->
+                            <label class="form-label fw-semibold" for="userName">Usuario</label>
+                            <div class="input-group input-group-lg mb-3">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input id="userName" type="text" th:field="*{userName}" class="form-control"
+                                    th:classappend="${error} ? 'is-invalid' : ''" placeholder="Ej. ulises.munoz"
+                                    autocomplete="username" required />
+                            </div>
+                            <div class="invalid-feedback d-block" th:if="${error}">
+                                Verifica tu usuario.
+                            </div>
+
+                            <!-- Contraseña -->
+                            <label class="form-label fw-semibold mt-2" for="password">Contraseña</label>
+                            <div class="input-group input-group-lg mb-2">
+                                <span class="input-group-text"><i class="bi bi-key"></i></span>
+                                <input id="password" type="password" th:field="*{password}" class="form-control"
+                                    th:classappend="${error} ? 'is-invalid' : ''" placeholder="••••••••"
+                                    autocomplete="current-password" required />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword"
+                                    aria-label="Mostrar contraseña">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback d-block" th:if="${error}">
+                                Verifica tu contraseña.
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mb-4 mt-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="true" id="rememberMe"
+                                        name="remember-me">
+                                    <label class="form-check-label" for="rememberMe">Recordarme</label>
+                                </div>
+
+                                <!-- Si no tienes esa ruta, elimínala -->
+                                <a class="link-primary text-decoration-none small" th:href="@{/recuperar}">
+                                    ¿Olvidaste tu contraseña?
+                                </a>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-semibold">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
+                            </button>
+
+                            <div class="text-center mt-4">
+                                <span class="text-muted small">© 2025 · Sistema de Usuarios</span>
+                            </div>
+
+                        </form>
+
+                    </div>
                 </div>
+
+                <div class="text-center mt-3 text-muted small">
+                    <i class="bi bi-lock me-1"></i> Tus datos se envían de forma segura.
+                </div>
+
             </div>
         </div>
-    </section>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Toggle password
+        const toggleBtn = document.getElementById('togglePassword');
+        const pass = document.getElementById('password');
+
+        toggleBtn?.addEventListener('click', () => {
+            const isHidden = pass.type === 'password';
+            pass.type = isHidden ? 'text' : 'password';
+            toggleBtn.innerHTML = isHidden
+                ? '<i class="bi bi-eye-slash"></i>'
+                : '<i class="bi bi-eye"></i>';
+        });
+    </script>
 </body>
 
 </html>

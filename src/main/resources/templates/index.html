@@ -1,247 +1,457 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout}">
+  layout:decorate="~{layout}">
 
 <head>
-    <title>Lista de Usuarios</title>
+  <title>Gestión de Usuarios</title>
+
+  <style>
+    .bg-soft-primary { background: rgba(13, 110, 253, .08); }
+    .card-elev { box-shadow: 0 12px 28px rgba(0, 0, 0, .08); }
+    .table thead th { position: sticky; top: 0; z-index: 2; }
+    .avatar { width: 56px; height: 56px; object-fit: cover; border: 3px solid rgba(13, 110, 253, .35); }
+    .truncate-1 { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  </style>
 </head>
 
-<body class="container-fluid bg-light" layout:fragment="contenido">
+<body class="bg-light" layout:fragment="contenido">
 
-    <div class="container my-4">
+  <div class="container py-4">
 
-        <!-- Header Section -->
-        <div class="bg-gradient bg-primary text-white rounded-4 shadow-lg p-4 mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-12 mb-3 mb-md-0 text-center">
-                    <h1 class="h2 mb-2 fw-bold d-flex justify-content-center align-items-center gap-2">
-                        <i class="bi bi-people-fill fs-1"></i>
-                        <span>Gestión de Usuarios</span>
-                    </h1>
-                    <p class="mb-0 opacity-75 fs-5">Administra y visualiza todos los usuarios del sistema</p>
-                </div>
-
-                <!-- <div class="col-md-6">
-                    <div class="d-flex gap-2 justify-content-md-end justify-content-center flex-wrap">
-                        <a class="btn btn-light btn-lg shadow-lg rounded-pill fw-bold" th:href="@{/usuario/add}">
-                            <i class="bi bi-person-plus-fill me-2"></i>Nuevo Usuario
-                        </a>
-                        <a class="btn btn-success btn-lg shadow-lg rounded-pill fw-bold" th:href="@{/Usuario/CargaMasiva}">
-                            <i class="bi bi-cloud-upload-fill me-2"></i>Carga Masiva
-                        </a>
-                    </div>
-                </div> -->
+    <!-- Header + acciones -->
+    <div class="card border-0 rounded-4 card-elev mb-4 overflow-hidden">
+      <div class="p-4 p-md-5 bg-primary text-white position-relative">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <span class="rounded-3 p-2 bg-white bg-opacity-25 d-inline-flex">
+              <i class="bi bi-people-fill fs-3"></i>
+            </span>
+            <div>
+              <h1 class="h3 fw-bold mb-1">Gestión de Usuarios</h1>
+              <p class="mb-0 opacity-75">Administra, filtra y revisa usuarios de forma rápida.</p>
             </div>
+          </div>
+
+          <!-- Toggle filtros -->
+          <button id="filtersToggleBtn"
+            class="btn btn-light rounded-pill fw-semibold px-4 d-inline-flex align-items-center gap-2"
+            type="button" aria-controls="filtersPanel" aria-expanded="false">
+            <i id="filtersToggleIcon" class="bi bi-funnel"></i>
+            <span id="filtersToggleText">Mostrar filtros</span>
+          </button>
         </div>
+      </div>
 
-        <!-- Filters Section -->
-        <!-- <div class="card shadow-lg mb-4 border-0 rounded-4">
-            <div class="card-header bg-light border-bottom border-primary border-4 pt-4">
-                <h5 class="mb-0 fw-bold text-primary">
-                    <span class="badge bg-primary rounded-circle p-2 me-2">
-                        <i class="bi bi-funnel-fill"></i>
-                    </span>
-                    Filtros de Búsqueda
-                </h5>
+      <!-- Resumen rápido (seguro si usuarios == null) -->
+      <div class="p-3 p-md-4 bg-white">
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-4 bg-soft-primary border">
+              <div class="d-flex align-items-center gap-2 text-primary fw-bold">
+                <i class="bi bi-people"></i><span>Total (vista actual)</span>
+              </div>
+              <div class="fs-4 fw-bold mt-1" th:text="${usuarios == null ? 0 : #lists.size(usuarios)}">0</div>
             </div>
-            <div class="card-body p-4 bg-white">
-                <form method="post" th:action="@{/usuario}" th:object="${usuarioBusqueda}">
-                    <div class="row g-3">
-                        <div class="col-md-3 col-sm-6">
-                            <label for="pNombreUsuario" class="form-label fw-semibold text-primary">
-                                <i class="bi bi-person me-1"></i>Nombre
-                            </label>
-                            <input type="text" class="form-control form-control-lg border-2 rounded-3 shadow-sm" id="pNombreUsuario" th:field="*{Nombre}"
-                                placeholder="Ingrese el nombre">
-                        </div>
+          </div>
 
-                        <div class="col-md-3 col-sm-6">
-                            <label for="pApellidoPaterno" class="form-label fw-semibold text-primary">
-                                <i class="bi bi-person-badge me-1"></i>Apellido Paterno
-                            </label>
-                            <input type="text" class="form-control form-control-lg border-2 rounded-3 shadow-sm" id="pApellidoPaterno" th:field="*{ApellidoPaterno}"
-                                placeholder="Apellido paterno">
-                        </div>
-
-                        <div class="col-md-3 col-sm-6">
-                            <label for="pApellidoMaterno" class="form-label fw-semibold text-primary">
-                                <i class="bi bi-person-badge-fill me-1"></i>Apellido Materno
-                            </label>
-                            <input type="text" class="form-control form-control-lg border-2 rounded-3 shadow-sm" id="pApellidoMaterno" th:field="*{ApellidoMaterno}"
-                                placeholder="Apellido materno">
-                        </div>
-
-                        <div class="col-md-3 col-sm-6">
-                            <label for="pNombreRol" class="form-label fw-semibold text-primary">
-                                <i class="bi bi-shield-check me-1"></i>Rol
-                            </label>
-                            <select class="form-select form-select-lg border-2 rounded-3 shadow-sm" id="pNombreRol" th:field="*{Rol.idRol}">
-                                <option value="0" selected>Todos los Roles</option>
-                                <option th:each="rol : ${roles}" th:value="${rol.idRol}" th:text="${rol.nombre}"></option>
-                            </select>
-                        </div>
-
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary btn-lg px-5 shadow-lg rounded-pill fw-bold">
-                                    <i class="bi bi-search me-2"></i>Buscar Usuarios
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-4 bg-light border">
+              <div class="d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-check-circle text-success"></i><span>Activos</span>
+              </div>
+              <div class="fs-4 fw-bold mt-1" th:text="${usuarios == null ? 0 : usuarios.?[Status].size()}">0</div>
             </div>
-        </div> -->
+          </div>
 
-        <!-- Table Section -->
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr class="bg-gradient">
-                            <th scope="col" class="text-center text-white py-4 fw-bold">Usuario</th>
-                            <th scope="col" class="text-white py-4 fw-bold">Identificación</th>
-                            <th scope="col" class="text-white py-4 fw-bold">Contacto</th>
-                            <th scope="col" class="text-white py-4 fw-bold">Dirección</th>
-                            <th scope="col" class="text-center text-white py-4 fw-bold">Rol</th>
-                            <th scope="col" class="text-center text-white py-4 fw-bold">Estatus</th>
-                            <th scope="col" class="text-center text-white py-4 fw-bold">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="usuario : ${usuarios}" class="border-bottom">
-                            <!-- Avatar Column -->
-                            <td class="text-center py-4">
-                                <div class="d-flex flex-column align-items-center gap-2">
-                                    <div class="position-relative">
-                                        <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ? 
-                                             'data:image/jpeg;base64,' + ${usuario.Imagen} : 
-                                             'https://via.placeholder.com/100?text=Usuario'" alt="Foto del usuario"
-                                            class="rounded-circle border border-4 border-primary shadow-lg"
-                                            style="width: 100px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <span class="badge bg-secondary rounded-pill text-wrap px-3 py-2 shadow-sm"
-                                        style="max-width: 130px;" th:text="${usuario.Nombre}">Usuario</span>
-                                </div>
-                            </td>
-
-                            <!-- Informacion del usuario -->
-                            <td class="py-4">
-                                <div class="mb-2">
-                                    <strong class="fs-5 fw-bold text-primary"
-                                        th:text="${usuario.UserName}">Username</strong>
-                                </div>
-                                <div class="text-muted">
-                                    <i class="bi bi-person-circle me-1"></i>
-                                    <span th:text="${usuario.Nombre}">Nombre</span>
-                                    <span th:text="${usuario.ApellidoPaterno}">Apellido</span>
-                                    <span th:text="${usuario.ApellidoMaterno}">Apellido</span>
-                                </div>
-                            </td>
-
-                            <!-- Contacto del usario -->
-                            <td class="py-4">
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="badge bg-primary rounded-circle p-2">
-                                            <i class="bi bi-telephone-fill"></i>
-                                        </span>
-                                        <span class="fw-semibold" th:text="${usuario.Telefono}">Teléfono</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="badge bg-success rounded-circle p-2">
-                                            <i class="bi bi-phone-fill"></i>
-                                        </span>
-                                        <span class="fw-semibold" th:text="${usuario.Celular}">Celular</span>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Direcciones del los usuarios -->
-                            <td class="py-4" style="max-width: 300px;">
-                                <div th:each="direccion : ${usuario.Direcciones}" class="mb-3">
-                                    <div
-                                        class="alert alert-info d-flex align-items-center gap-2 border-0 shadow-sm rounded-3 px-3 py-2">
-                                        <div class="fw-bold text-dark mb-2">
-                                            <i class="bi bi-geo-alt-fill me-1 text-primary"></i>
-                                            <span th:text="${direccion.Calle}">Calle</span>
-                                            <span class="badge bg-primary rounded-pill ms-2"
-                                                th:text="|#${direccion.NumeroExterior}|">#123</span>
-                                            <span th:if="${direccion.NumeroInterior}"
-                                                class="badge bg-secondary rounded-pill ms-1"
-                                                th:text="| Int. ${direccion.NumeroInterior}|">Int. A</span>
-                                        </div>
-                                        <div class="small text-muted">
-                                            <div class="mb-1">
-                                                <i class="bi bi-house-door me-1"></i>
-                                                <span th:text="${direccion.colonia.nombre}">Colonia</span>
-                                            </div>
-                                            <div class="mb-1">
-                                                <i class="bi bi-map me-1"></i>
-                                                <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>,
-                                                <span
-                                                    th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span>
-                                            </div>
-                                            <div>
-                                                <i class="bi bi-globe me-1"></i>
-                                                <span
-                                                    th:text="${direccion.colonia.municipio.estado.pais.nombre}">País</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-
-                            <!-- Rol del usario-->
-                            <td class="text-center py-4">
-                                <span class="badge bg-primary rounded-pill px-3 py-2 shadow fw-bold fs-6">
-                                    <i class="bi bi-shield-check me-1"></i>
-                                    <span th:text="${usuario.rol.nombre}">Rol</span>
-                                </span>
-                            </td>
-
-                            <!-- Status del usuario -->
-                            <td class="text-center py-4">
-                                <!-- Usuario Activo -->
-                                <div th:if="${usuario.Status}"
-                                    class="d-inline-flex align-items-center gap-2 badge bg-success rounded-pill px-3 py-2 shadow fw-bold fs-6">
-                                    <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
-                                    <span>Activo</span>
-                                </div>
-                                <!-- Si el usuario esta inactivo -->
-                                <div th:unless="${usuario.Status}"
-                                    class="d-inline-flex align-items-center gap-2 badge bg-secondary rounded-pill px-3 py-2 shadow fw-bold fs-6">
-                                    <i class="bi bi-x-circle-fill"></i>
-                                    <span>Inactivo</span>
-                                </div>
-                            </td>
-
-                            <!-- Botones de accion -->
-                            <td class="py-4">
-                                <div class="d-flex gap-2 justify-content-center flex-wrap">
-                                    <a class="btn btn-warning btn-sm shadow rounded-pill fw-bold"
-                                        th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
-                                        <i class="bi bi-eye-fill me-1"></i>Ver
-                                    </a>
-                                    <a class="btn btn-danger btn-sm shadow rounded-pill fw-bold"
-                                        th:href="@{/usuario/delete(IdUsuario=${usuario.IdUsuario})}">
-                                        <i class="bi bi-trash-fill me-1"></i>Eliminar
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+          <div class="col-12 col-md-4">
+            <div class="p-3 rounded-4 bg-light border">
+              <div class="d-flex align-items-center gap-2 fw-bold">
+                <i class="bi bi-slash-circle text-secondary"></i><span>Inactivos</span>
+              </div>
+              <div class="fs-4 fw-bold mt-1" th:text="${usuarios == null ? 0 : usuarios.?[!Status].size()}">0</div>
             </div>
+          </div>
         </div>
-
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-</body>
+    <!-- Filtros (abre automáticamente si hay params) -->
+    <div class="collapse" id="filtersPanel"
+      th:classappend="${(param.nombre != null and param.nombre[0] != '') or
+                      (param.apellidoPaterno != null and param.apellidoPaterno[0] != '') or
+                      (param.apellidoMaterno != null and param.apellidoMaterno[0] != '') or
+                      (param.idRol != null and param.idRol[0] != '') or
+                      (param.status != null and param.status[0] != '')}
+                      ? ' show' : ''">
 
+      <div class="card border-0 rounded-4 card-elev mb-4">
+        <div class="card-body p-4">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <span class="badge text-bg-primary rounded-pill px-3 py-2">
+              <i class="bi bi-funnel me-1"></i>Filtros
+            </span>
+
+            <button id="filtersCloseBtn" class="btn btn-outline-secondary btn-sm rounded-pill" type="button">
+              <i class="bi bi-x-lg me-1"></i>Cerrar
+            </button>
+          </div>
+
+          <form method="get" th:action="@{/usuario/search}">
+            <div class="row g-3">
+
+              <div class="col-12 col-md-3">
+                <label for="pNombreUsuario" class="form-label fw-semibold">Nombre</label>
+                <div class="input-group input-group-lg">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text" class="form-control" id="pNombreUsuario" name="nombre"
+                    placeholder="Ej. Carlos" th:value="${param.nombre}">
+                </div>
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label for="pApellidoPaterno" class="form-label fw-semibold">Apellido paterno</label>
+                <div class="input-group input-group-lg">
+                  <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                  <input type="text" class="form-control" id="pApellidoPaterno" name="apellidoPaterno"
+                    placeholder="Ej. López" th:value="${param.apellidoPaterno}">
+                </div>
+              </div>
+
+              <div class="col-12 col-md-3">
+                <label for="pApellidoMaterno" class="form-label fw-semibold">Apellido materno</label>
+                <div class="input-group input-group-lg">
+                  <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
+                  <input type="text" class="form-control" id="pApellidoMaterno" name="apellidoMaterno"
+                    placeholder="Ej. Pérez" th:value="${param.apellidoMaterno}">
+                </div>
+              </div>
+
+              <!-- ✅ ROL (igual que el que funcionaba) -->
+              <div class="col-12 col-md-3">
+                <label for="pNombreRol" class="form-label fw-semibold">Rol</label>
+                <select class="form-select form-select-lg" id="pNombreRol" name="idRol"
+                        th:value="${param.idRol}">
+                  <option value="">Todos los roles</option>
+                  <option th:each="rol : ${roles}"
+                          th:value="${rol.idRol}"
+                          th:text="${rol.nombre}">
+                  </option>
+                </select>
+              </div>
+
+              <!-- ✅ STATUS (igual que el que funcionaba) -->
+              <div class="col-12 col-md-3">
+                <label for="pStatus" class="form-label fw-semibold">Estatus</label>
+                <select class="form-select form-select-lg" id="pStatus" name="status"
+                        th:value="${param.status}">
+                  <option value="">Todos</option>
+                  <option value="true">Activo</option>
+                  <option value="false">Inactivo</option>
+                </select>
+              </div>
+
+              <div class="col-12 col-md-9 d-flex align-items-end justify-content-end gap-2">
+                <a class="btn btn-outline-secondary btn-lg rounded-pill px-4" th:href="@{/usuario}">
+                  <i class="bi bi-eraser me-2"></i>Limpiar
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 fw-semibold">
+                  <i class="bi bi-search me-2"></i>Buscar
+                </button>
+              </div>
+
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla (desktop) + Cards (mobile) -->
+    <div class="card border-0 rounded-4 card-elev overflow-hidden">
+      <div class="card-header bg-white border-0 p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div class="fw-bold fs-5">
+            <i class="bi bi-list-check text-primary me-2"></i>Resultados
+          </div>
+          <div class="text-muted small">Tip: usa “Mostrar filtros” cuando necesites buscar.</div>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="d-none d-lg-block table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-dark">
+            <tr>
+              <th class="py-3">Usuario</th>
+              <th class="py-3">Contacto</th>
+              <th class="py-3">Direcciones</th>
+              <th class="py-3 text-center">Rol</th>
+              <th class="py-3 text-center">Estatus</th>
+              <th class="py-3 text-center">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr th:each="usuario : ${usuarios}">
+              <!-- Usuario: nombre+apellidos y username -->
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
+                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
+                     'https://via.placeholder.com/120?text=U'"
+                    alt="Foto usuario" class="rounded-circle avatar shadow-sm">
+
+                  <div class="min-w-0">
+                    <div class="fw-bold text-primary truncate-1">
+                      <span th:text="${usuario.Nombre}">Nombre</span>
+                      <span th:text="${usuario.ApellidoPaterno}">Apellido</span>
+                      <span th:text="${usuario.ApellidoMaterno}">Apellido</span>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-at me-1"></i><span th:text="${usuario.UserName}">username</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Contacto: correo + tel + cel -->
+              <td>
+                <div class="d-flex flex-column gap-1">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-envelope text-primary"></i>
+                    <span class="truncate-1" th:text="${usuario.Email}">correo@dominio.com</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-telephone text-secondary"></i>
+                    <span th:text="${usuario.Telefono}">Teléfono</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-phone text-success"></i>
+                    <span th:text="${usuario.Celular}">Celular</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Direcciones: primera + colapsable -->
+              <td style="max-width: 420px;">
+                <div th:if="${usuario.Direcciones != null and !usuario.Direcciones.isEmpty()}">
+
+                  <div th:each="direccion, iter : ${usuario.Direcciones}" th:if="${iter.index == 0}">
+                    <div class="p-2 rounded-3 bg-light border">
+                      <div class="fw-semibold truncate-1">
+                        <i class="bi bi-geo-alt-fill text-primary me-1"></i>
+                        <span th:text="${direccion.Calle}">Calle</span>
+                        <span th:text="| #${direccion.NumeroExterior}|">#</span>
+                        <span th:if="${direccion.NumeroInterior}" th:text="| Int. ${direccion.NumeroInterior}|"></span>
+                      </div>
+                      <div class="text-muted small truncate-1">
+                        <span th:text="${direccion.colonia.nombre}">Colonia</span> ·
+                        <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>,
+                        <span th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mt-2" th:if="${usuario.Direcciones.size() > 1}">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill" type="button" data-bs-toggle="collapse"
+                      th:attr="data-bs-target='#addr-'+${usuario.IdUsuario}, aria-controls='addr-'+${usuario.IdUsuario}">
+                      <i class="bi bi-chevron-down me-1"></i>
+                      Ver <span th:text="${usuario.Direcciones.size() - 1}">0</span> más
+                    </button>
+
+                    <div class="collapse mt-2" th:id="'addr-' + ${usuario.IdUsuario}">
+                      <div th:each="direccion, iter : ${usuario.Direcciones}" th:if="${iter.index > 0}" class="mb-2">
+                        <div class="p-2 rounded-3 bg-white border">
+                          <div class="fw-semibold truncate-1">
+                            <i class="bi bi-geo-alt text-primary me-1"></i>
+                            <span th:text="${direccion.Calle}">Calle</span>
+                            <span th:text="| #${direccion.NumeroExterior}|">#</span>
+                            <span th:if="${direccion.NumeroInterior}" th:text="| Int. ${direccion.NumeroInterior}|"></span>
+                          </div>
+                          <div class="text-muted small truncate-1">
+                            <span th:text="${direccion.colonia.nombre}">Colonia</span> ·
+                            <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>,
+                            <span th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div th:unless="${usuario.Direcciones != null and !usuario.Direcciones.isEmpty()}" class="text-muted small">
+                  <i class="bi bi-info-circle me-1"></i>Sin dirección registrada
+                </div>
+              </td>
+
+              <td class="text-center">
+                <span class="badge text-bg-primary rounded-pill px-3 py-2">
+                  <i class="bi bi-shield-check me-1"></i>
+                  <span th:text="${usuario.rol.nombre}">Rol</span>
+                </span>
+              </td>
+
+              <td class="text-center">
+                <span th:if="${usuario.Status}" class="badge text-bg-success rounded-pill px-3 py-2">
+                  <i class="bi bi-check-circle me-1"></i>Activo
+                </span>
+                <span th:unless="${usuario.Status}" class="badge text-bg-secondary rounded-pill px-3 py-2">
+                  <i class="bi bi-x-circle me-1"></i>Inactivo
+                </span>
+              </td>
+
+              <td class="text-center">
+                <div class="btn-group" role="group">
+                  <a class="btn btn-outline-primary btn-sm"
+                    th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}" data-bs-toggle="tooltip"
+                    data-bs-title="Ver detalle">
+                    <i class="bi bi-eye"></i>
+                  </a>
+
+                  <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal"
+                    th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile cards (simple) -->
+      <div class="d-lg-none p-3">
+        <div class="row g-3">
+          <div class="col-12" th:each="usuario : ${usuarios}">
+            <div class="card border-0 rounded-4 shadow-sm">
+              <div class="card-body">
+
+                <div class="d-flex align-items-center gap-3">
+                  <img th:src="${usuario.Imagen != null and usuario.Imagen.length() > 0} ?
+                     'data:image/jpeg;base64,' + ${usuario.Imagen} :
+                     'https://via.placeholder.com/120?text=U'"
+                    class="rounded-circle avatar" alt="Foto usuario">
+
+                  <div class="flex-grow-1">
+                    <div class="fw-bold text-primary">
+                      <span th:text="${usuario.Nombre}">Nombre</span>
+                      <span th:text="${usuario.ApellidoPaterno}">Apellido</span>
+                      <span th:text="${usuario.ApellidoMaterno}">Apellido</span>
+                    </div>
+                    <div class="text-muted small">
+                      <i class="bi bi-at me-1"></i><span th:text="${usuario.UserName}">username</span>
+                    </div>
+                  </div>
+
+                  <span th:if="${usuario.Status}" class="badge text-bg-success rounded-pill">Activo</span>
+                  <span th:unless="${usuario.Status}" class="badge text-bg-secondary rounded-pill">Inactivo</span>
+                </div>
+
+                <hr class="my-3">
+
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-envelope text-primary"></i>
+                    <span class="truncate-1" th:text="${usuario.Email}">correo@dominio.com</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-phone text-success"></i>
+                    <span th:text="${usuario.Celular}">Celular</span>
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                  <a class="btn btn-primary w-100 rounded-pill"
+                    th:href="@{/usuario/detail/(IdUsuario=${usuario.IdUsuario})}">
+                    <i class="bi bi-eye me-2"></i>Ver
+                  </a>
+                  <button type="button" class="btn btn-outline-danger w-100 rounded-pill" data-bs-toggle="modal"
+                    data-bs-target="#deleteModal"
+                    th:attr="data-userid=${usuario.IdUsuario},data-username=${usuario.UserName}">
+                    <i class="bi bi-trash me-2"></i>Eliminar
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal eliminar -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4">
+        <div class="modal-header border-0">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirmar eliminación
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1">Vas a eliminar al usuario:</p>
+          <p class="fw-bold mb-0" id="deleteUserName">@username</p>
+          <p class="text-muted small mt-2 mb-0">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+          <a id="confirmDeleteBtn" class="btn btn-danger rounded-pill px-4" href="#">Eliminar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+  <script>
+    // Tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+    // Modal delete binding
+    const deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', event => {
+      const button = event.relatedTarget;
+      const userId = button.getAttribute('data-userid');
+      const userName = button.getAttribute('data-username');
+
+      document.getElementById('deleteUserName').textContent = userName || 'Usuario';
+      document.getElementById('confirmDeleteBtn').href =
+        `/usuario/delete?IdUsuario=${encodeURIComponent(userId)}`;
+    });
+
+    // Filtros: toggle/hide por JS
+    const filtersPanel = document.getElementById('filtersPanel');
+    const toggleBtn = document.getElementById('filtersToggleBtn');
+    const closeBtn = document.getElementById('filtersCloseBtn');
+    const btnText = document.getElementById('filtersToggleText');
+    const btnIcon = document.getElementById('filtersToggleIcon');
+
+    function setFiltersBtnState(isOpen) {
+      toggleBtn?.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (btnText) btnText.textContent = isOpen ? 'Ocultar filtros' : 'Mostrar filtros';
+      if (btnIcon) btnIcon.className = isOpen ? 'bi bi-x-circle' : 'bi bi-funnel';
+    }
+
+    if (filtersPanel && typeof bootstrap !== 'undefined') {
+      const collapse = bootstrap.Collapse.getOrCreateInstance(filtersPanel, { toggle: false });
+
+      setFiltersBtnState(filtersPanel.classList.contains('show'));
+
+      toggleBtn?.addEventListener('click', () => collapse.toggle());
+      closeBtn?.addEventListener('click', () => collapse.hide());
+
+      filtersPanel.addEventListener('shown.bs.collapse', () => setFiltersBtnState(true));
+      filtersPanel.addEventListener('hidden.bs.collapse', () => setFiltersBtnState(false));
+    }
+  </script>
+
+</body>
 </html>

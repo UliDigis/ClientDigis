@@ -22,18 +22,23 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+//Controlador para gestionar el proceso de login y autenticacion
 @Controller
 public class LoginController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String urlBase = "http://localhost:8080/";
 
+    // Mostrar la vista del formulario de inicio de sesion
+    // loginForm
     @GetMapping("/login")
     public String loginForm(Model model) {
         model.addAttribute("usuario", new LoginDTO());
         return "login";
     }
 
+    // Procesar las credenciales de acceso y establecer la sesion de seguridad
+    // login
     @PostMapping("/login")
     public String login(@ModelAttribute("usuario") LoginDTO loginForm, Model model, HttpSession session) {
 
