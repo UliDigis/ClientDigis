@@ -268,48 +268,28 @@ public class UsuarioGetController {
             apellidoPaterno = (apellidoPaterno != null) ? apellidoPaterno.trim() : null;
             apellidoMaterno = (apellidoMaterno != null) ? apellidoMaterno.trim() : null;
 
-            boolean soloRol = (idRol != null && idRol > 0)
-                    && (nombre == null || nombre.isBlank())
-                    && (apellidoPaterno == null || apellidoPaterno.isBlank())
-                    && (apellidoMaterno == null || apellidoMaterno.isBlank())
-                    && status == null;
-
-            ResponseEntity<Result<List<Usuario>>> resp;
-            if (soloRol) {
-                // El endpoint de búsqueda no está devolviendo resultados solo por rol,
-                // así que pedimos todo y filtramos localmente.
-                resp = restTemplate.exchange(
-                        urlBase + "api/usuario",
-                        HttpMethod.GET,
-                        entity,
-                        new ParameterizedTypeReference<Result<List<Usuario>>>() {
-                        });
-            } else {
-                var builder = UriComponentsBuilder.fromUriString(urlBase + "api/usuario/search");
-                if (nombre != null && !nombre.isBlank()) {
-                    builder.queryParam("nombre", nombre);
-                }
-                if (apellidoPaterno != null && !apellidoPaterno.isBlank()) {
-                    builder.queryParam("apellidoPaterno", apellidoPaterno);
-                }
+            var builder = UriComponentsBuilder.fromUriString(urlBase + "api/usuario/search");
+            if (nombre != null && !nombre.isBlank()) {
+                builder.queryParam("nombre", nombre);
+            }
+            if (apellidoPaterno != null && !apellidoPaterno.isBlank()) {
+                builder.queryParam("apellidoPaterno", apellidoPaterno);
+            }
                 if (apellidoMaterno != null && !apellidoMaterno.isBlank()) {
                     builder.queryParam("apellidoMaterno", apellidoMaterno);
                 }
-                if (idRol != null && idRol > 0) {
-                    builder.queryParam("idRol", idRol);
-                }
-                if (status != null) {
-                    builder.queryParam("status", status);
-                }
-
-                resp = restTemplate.exchange(
-                        builder.toUriString(),
-                        HttpMethod.GET,
-                        entity,
-                        new ParameterizedTypeReference<Result<List<Usuario>>>() {
-                        });
+                // No enviamos idRol al API porque la consulta en backend falla;
+                // filtramos por rol del lado cliente más abajo.
+            if (status != null) {
+                builder.queryParam("status", status);
             }
 
+            ResponseEntity<Result<List<Usuario>>> resp = restTemplate.exchange(
+                    builder.toUriString(),
+                    HttpMethod.GET,
+                    entity,
+                    new ParameterizedTypeReference<Result<List<Usuario>>>() {
+                    });
             if (resp.getStatusCode().is2xxSuccessful()) {
                 Result<List<Usuario>> r = resp.getBody();
                 List<Usuario> lista = (r != null && r.Object != null) ? r.Object : java.util.Collections.emptyList();

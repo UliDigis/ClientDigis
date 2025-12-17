@@ -244,8 +244,8 @@
                   </div>
 
                   <div class="mt-2" th:if="${usuario.Direcciones.size() > 1}">
-                    <button class="btn btn-outline-primary btn-sm rounded-pill" type="button" data-bs-toggle="collapse"
-                            th:attr="data-bs-target='#addr-'+${usuario.IdUsuario}, aria-controls='addr-'+${usuario.IdUsuario}">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill addr-toggle" type="button"
+                            th:attr="data-addr-target='#addr-'+${usuario.IdUsuario}, aria-controls='addr-'+${usuario.IdUsuario}">
                       <i class="bi bi-chevron-down me-1"></i>
                       Ver <span th:text="${usuario.Direcciones.size() - 1}">0</span> más
                     </button>
@@ -442,6 +442,19 @@
       filtersPanel.addEventListener('shown.bs.collapse', () => setFiltersBtnState(true));
       filtersPanel.addEventListener('hidden.bs.collapse', () => setFiltersBtnState(false));
     }
+
+    // Toggle de direcciones por usuario (abre/cierra en cada clic)
+    const addrButtons = document.querySelectorAll('.addr-toggle');
+    addrButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-addr-target');
+        if (!target) return;
+        const panel = document.querySelector(target);
+        if (!panel || typeof bootstrap === 'undefined') return;
+        const col = bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false });
+        col.toggle();
+      });
+    });
   </script>
 </body>
 </html>
