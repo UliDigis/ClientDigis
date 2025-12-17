@@ -104,7 +104,7 @@
                 <div class="input-group input-group-lg">
                   <span class="input-group-text"><i class="bi bi-person"></i></span>
                   <input type="text" class="form-control" id="pNombreUsuario" name="nombre"
-                    placeholder="Ej. Carlos" th:value="${param.nombre}">
+                    placeholder="Ej. Carlos" th:value="${param.nombre != null ? param.nombre[0] : ''}">
                 </div>
               </div>
 
