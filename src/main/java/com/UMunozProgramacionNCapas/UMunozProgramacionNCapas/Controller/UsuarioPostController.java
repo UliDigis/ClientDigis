@@ -31,10 +31,8 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("usuario")
 public class UsuarioPostController {
 
-    private static final String urlBase="http://localhost:8080/";
+    private static final String urlBase = "http://localhost:8080/";
 
-    // Enviar un correo electronico personalizado
-    // SendEmail
     @PostMapping("/sendEmail")
     public String SendEmail(@RequestParam("email") String email,
             @RequestParam("asunto") String asunto,
@@ -68,7 +66,7 @@ public class UsuarioPostController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().is2xxSuccessful()) {
                 model.addAttribute("successMessage", "Correo enviado");
@@ -85,8 +83,6 @@ public class UsuarioPostController {
         return "redirect:/usaurio";
     }
 
-    // Registrar un nuevo usuario y enviar correo de verificacion
-    // Add
     @PostMapping("/add")
     public String Add(@ModelAttribute Usuario usuario,
             @RequestParam(value = "imagenFile", required = false) MultipartFile imagenFile,
@@ -122,7 +118,7 @@ public class UsuarioPostController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
-                    });
+            });
 
             if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
                 model.addAttribute("errorMessage", "No se pudo crear el usuario");
@@ -152,7 +148,7 @@ public class UsuarioPostController {
                     HttpMethod.POST,
                     entityEmail,
                     new ParameterizedTypeReference<Result>() {
-                    });
+            });
 
             return "redirect:/usuario";
 
@@ -164,15 +160,17 @@ public class UsuarioPostController {
             return "UsuarioForm";
         }
     }
-
-    // Gestionar direccion (Agregar o Editar) dependiendo del ID
-    // gestionarDireccion
+    
     @PostMapping("/addDireccion")
-    public String gestionarDireccion(@ModelAttribute Direccion direccion, @RequestParam int IdUsuario,
-            @RequestParam int IdDireccion, Model model, HttpSession session) {
+    public String gestionarDireccion(
+            @ModelAttribute Direccion direccion,
+            @RequestParam int IdUsuario,
+            @RequestParam(value = "IdDireccion", required = false) Integer IdDireccion,
+            @RequestParam("IdColonia") int IdColonia,
+            Model model,
+            HttpSession session) {
 
         String token = (String) session.getAttribute("JWT_TOKEN");
-
         if (token == null) {
             return "redirect:/login";
         }
@@ -182,29 +180,46 @@ public class UsuarioPostController {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
-            HttpEntity<Direccion> entity = new HttpEntity<>(direccion, headers);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            int idDir = (IdDireccion == null ? 0 : IdDireccion);
+
+            java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+            payload.put("idDireccion", idDir); 
+            payload.put("calle", direccion.getCalle());
+            payload.put("numeroExterior", direccion.getNumeroExterior());
+            payload.put("numeroInterior", direccion.getNumeroInterior());
+
+            java.util.Map<String, Object> colonia = new java.util.LinkedHashMap<>();
+            colonia.put("idColonia", IdColonia);
+            payload.put("colonia", colonia);
+
+            HttpEntity<Object> entity = new HttpEntity<>(payload, headers);
 
             String url;
             HttpMethod method;
 
-            if (IdDireccion == 0) {
+            if (idDir == 0) {
                 url = urlBase + "api/direccion/add/" + IdUsuario;
                 method = HttpMethod.POST;
             } else {
-                url = urlBase + "api/usuario/" + IdUsuario + "/direccion/" + IdDireccion;
+                url = urlBase + "api/usuario/" + IdUsuario + "/direccion/" + idDir;
                 method = HttpMethod.PUT;
             }
 
-            ResponseEntity<Result<List<Direccion>>> responseEntity = restTemplate.exchange(
+            ResponseEntity<Result> responseEntity = restTemplate.exchange(
                     url,
                     method,
                     entity,
-                    new ParameterizedTypeReference<Result<List<Direccion>>>() {
-                    });
+                    new ParameterizedTypeReference<Result>() {
+            }
+            );
 
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                String mensaje = IdDireccion == 0 ? "agregada" : "actualizada";
-                model.addAttribute("successMessage", "Dirección " + mensaje + " correctamente");
+            if (!responseEntity.getStatusCode().is2xxSuccessful()
+                    || responseEntity.getBody() == null
+                    || !responseEntity.getBody().correct) {
+                String msg = (responseEntity.getBody() != null ? responseEntity.getBody().errorMessage : "No se guardó la dirección");
+                model.addAttribute("errorMessage", msg);
             }
 
         } catch (HttpClientErrorException.Unauthorized ex) {
@@ -217,8 +232,6 @@ public class UsuarioPostController {
         return "redirect:/usuario/detail/?IdUsuario=" + IdUsuario;
     }
 
-    // Actualizar la informacion y la imagen de un usuario existente
-    // Update
     @PostMapping("update")
     public String Update(
             @ModelAttribute Usuario usuario,
@@ -259,7 +272,7 @@ public class UsuarioPostController {
                         HttpMethod.GET,
                         entityGet,
                         new ParameterizedTypeReference<Result<Usuario>>() {
-                        });
+                });
 
                 if (responseGet.getStatusCode().is2xxSuccessful()
                         && responseGet.getBody() != null
@@ -271,25 +284,22 @@ public class UsuarioPostController {
 
             HttpEntity<Usuario> entityPut = new HttpEntity<>(usuario, headers);
 
-            ResponseEntity<Result> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     urlBase + "api/usuario/update/" + usuario.getIdUsuario(),
                     HttpMethod.PUT,
                     entityPut,
                     new ParameterizedTypeReference<Result>() {
-                    });
+            });
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
             return "redirect:/login";
         } catch (Exception ex) {
-
         }
 
         return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
     }
 
-    // Actualizar datos de una direccion existente
-    // UpdateDireccion
     @PostMapping("updateDireccion")
     public String UpdateDireccion(@ModelAttribute Direccion direccion, int IdUsuario, Model model,
             HttpSession session) {
@@ -312,7 +322,7 @@ public class UsuarioPostController {
                     HttpMethod.PUT,
                     entity,
                     new ParameterizedTypeReference<Result<List<Direccion>>>() {
-                    });
+            });
 
             if (responseEntity.getStatusCode().value() == 200 || IdUsuario > 0) {
 
