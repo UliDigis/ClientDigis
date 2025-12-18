@@ -272,7 +272,9 @@
                               <i class="bi bi-pencil me-1"></i>Editar
                             </button>
 
-                            <button type="button" class="btn btn-outline-danger rounded-pill fw-semibold">
+                            <button type="button"
+                              class="btn btn-outline-danger rounded-pill fw-semibold btn-delete-direccion"
+                              th:attr="data-direccion-id=${direccion.IdDireccion},data-usuario-id=${usuario.IdUsuario}">
                               <i class="bi bi-trash me-1"></i>Eliminar
                             </button>
                           </div>
@@ -542,8 +544,10 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+      // Vista previa de imagen
       $(document).on("change", "#ImagenFile", function () {
         const file = this.files && this.files[0] ? this.files[0] : null;
         if (!file) return;
@@ -562,6 +566,42 @@
         };
         reader.readAsDataURL(file);
       });
+
+      // Confirmar eliminación de dirección (DELETE con token)
+      $(document).on("click", ".btn-delete-direccion", function () {
+        const idDireccion = $(this).data("direccion-id");
+        const token = $("#Token").val();
+        if (!idDireccion || !token) return;
+
+        Swal.fire({
+          title: "¿Eliminar esta dirección?",
+          text: "Esta acción no se puede deshacer.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar"
+        }).then((result) => {
+          if (!result.isConfirmed) return;
+
+          fetch("http://localhost:8080/api/direccion/delete/direccion?IdDireccion=" + encodeURIComponent(idDireccion), {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          })
+            .then((r) => {
+              if (!r.ok) throw new Error("Error al eliminar");
+              return r.json();
+            })
+            .then(() => Swal.fire("Eliminada", "La dirección se eliminó correctamente.", "success")
+              .then(() => window.location.reload()))
+            .catch(() => Swal.fire("Error", "No se pudo eliminar", "error"));
+        });
+      });
+
 
       function FormDireccionNueva() {
         $("#IdDireccion").val("0");
