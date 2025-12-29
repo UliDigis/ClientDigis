@@ -85,7 +85,7 @@
                             <div class="input-group input-group-lg mb-3">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                                 <input id="userName" type="text" th:field="*{userName}" class="form-control"
-                                    th:classappend="${error} ? 'is-invalid' : ''" placeholder="Ej. ulises.munoz"
+                                    th:classappend="${error} ? 'is-invalid' : ''" placeholder="Nombre de usuario"
                                     autocomplete="username" required />
                             </div>
                             <div class="invalid-feedback d-block" th:if="${error}">
@@ -126,11 +126,6 @@
 
                     </div>
                 </div>
-
-                <div class="text-center mt-3 text-muted small">
-                    <i class="bi bi-lock me-1"></i> Tus datos se envían de forma segura.
-                </div>
-
             </div>
         </div>
     </main>

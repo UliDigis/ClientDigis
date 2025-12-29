@@ -1,7 +1,6 @@
 package com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.Controller;
 
 import java.util.Base64;
-import java.util.List;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -16,8 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Direccion;
 import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.EmailRequest;
@@ -26,7 +27,7 @@ import com.UMunozProgramacionNCapas.UMunozProgramacionNCapas.ML.Usuario;
 
 import jakarta.servlet.http.HttpSession;
 
-//Controlador para todos los Post de Usuario
+// Controlador para todos los Post de Usuario
 @Controller
 @RequestMapping("usuario")
 public class UsuarioPostController {
@@ -52,7 +53,7 @@ public class UsuarioPostController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
-            headers.set("Content-Type", "application/json");
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
             EmailRequest emailRequest = new EmailRequest();
             emailRequest.setTo(email);
@@ -66,12 +67,14 @@ public class UsuarioPostController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-            });
+                    });
 
-            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            if (responseEntity.getStatusCode().is2xxSuccessful()
+                    && responseEntity.getBody() != null
+                    && responseEntity.getBody().correct) {
                 model.addAttribute("successMessage", "Correo enviado");
             } else {
-                model.addAttribute("errorMessage", "No se mando el correo");
+                model.addAttribute("errorMessage", "No se mandó el correo");
             }
 
         } catch (HttpClientErrorException.Unauthorized ex) {
@@ -80,16 +83,22 @@ public class UsuarioPostController {
         } catch (Exception ex) {
             model.addAttribute("errorMessage", "Error: " + ex.getMessage());
         }
-        return "redirect:/usaurio";
+
+        return "redirect:/usuario";
     }
 
     @PostMapping("/add")
     public String Add(@ModelAttribute Usuario usuario,
             @RequestParam(value = "imagenFile", required = false) MultipartFile imagenFile,
-            Model model, HttpSession session) {
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
         String token = (String) session.getAttribute("JWT_TOKEN");
         if (token == null) {
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
         }
 
@@ -97,10 +106,10 @@ public class UsuarioPostController {
 
         try {
             if (imagenFile != null && !imagenFile.isEmpty()) {
-                String nombre = imagenFile.getOriginalFilename();
-                String ext = nombre.substring(nombre.lastIndexOf('.') + 1);
-                if (!ext.equalsIgnoreCase("jpg") && !ext.equalsIgnoreCase("png")) {
-                    model.addAttribute("Error", "Formato de imagen no válido (solo JPG y PNG)");
+                String contentType = imagenFile.getContentType();
+                if (contentType == null
+                        || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+                    model.addAttribute("errorMessage", "Formato de imagen no válido (solo JPG y PNG)");
                     return "UsuarioForm";
                 }
                 String base64 = Base64.getEncoder().encodeToString(imagenFile.getBytes());
@@ -111,6 +120,8 @@ public class UsuarioPostController {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
             HttpEntity<Usuario> entity = new HttpEntity<>(usuario, headers);
 
             ResponseEntity<Result<Usuario>> responseEntity = restTemplate.exchange(
@@ -118,60 +129,93 @@ public class UsuarioPostController {
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Result<Usuario>>() {
-            });
+                    });
 
-            if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
-                model.addAttribute("errorMessage", "No se pudo crear el usuario");
+            Result<Usuario> body = responseEntity.getBody();
+
+            if (!responseEntity.getStatusCode().is2xxSuccessful() || body == null || !body.correct) {
+                String msg = (body != null && body.errorMessage != null && !body.errorMessage.isBlank())
+                        ? body.errorMessage
+                        : "No se pudo crear el usuario";
+                model.addAttribute("errorMessage", msg);
                 return "UsuarioForm";
             }
 
-            Usuario usuarioCreado = responseEntity.getBody().Object;
-            if (usuarioCreado == null || usuarioCreado.getToken() == null || usuarioCreado.getToken().isEmpty()) {
-                model.addAttribute("errorMessage", "No se recibió token de verificación");
+            Usuario usuarioCreado = body.Object;
+            if (usuarioCreado == null) {
+                model.addAttribute("errorMessage", "No se pudo crear el usuario (respuesta vacía).");
                 return "UsuarioForm";
             }
 
-            String verifyUrl = "http://localhost:8081/verify?token=" + usuarioCreado.getToken();
+            // Intentar envío de correo solo si hay token
+            if (usuarioCreado.getToken() != null && !usuarioCreado.getToken().isBlank()) {
+                String verifyUrl = "http://localhost:8081/verify?token=" + usuarioCreado.getToken();
 
-            EmailRequest emailRequest = new EmailRequest();
-            emailRequest.setTo(usuarioCreado.getEmail());
-            emailRequest.setSubject("Verifica tu cuenta");
-            emailRequest.setBody("Haz clic en el siguiente enlace para verificar tu cuenta: " + verifyUrl);
+                EmailRequest emailRequest = new EmailRequest();
+                emailRequest.setTo(usuarioCreado.getEmail());
+                emailRequest.setSubject("Verifica tu cuenta");
+                emailRequest.setBody("Haz clic en el siguiente enlace para verificar tu cuenta: " + verifyUrl);
 
-            HttpHeaders headersEmail = new HttpHeaders();
-            headersEmail.setBearerAuth(token);
-            headersEmail.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<EmailRequest> entityEmail = new HttpEntity<>(emailRequest, headersEmail);
+                HttpHeaders headersEmail = new HttpHeaders();
+                headersEmail.setBearerAuth(token);
+                headersEmail.setContentType(MediaType.APPLICATION_JSON);
 
-            restTemplate.exchange(
-                    urlBase + "api/email/send",
-                    HttpMethod.POST,
-                    entityEmail,
-                    new ParameterizedTypeReference<Result>() {
-            });
+                HttpEntity<EmailRequest> entityEmail = new HttpEntity<>(emailRequest, headersEmail);
 
+                try {
+                    restTemplate.exchange(
+                            urlBase + "api/email/send",
+                            HttpMethod.POST,
+                            entityEmail,
+                            new ParameterizedTypeReference<Result>() {
+                            });
+                } catch (Exception emailEx) {
+                    // Usuario creado, correo falló
+                    redirectAttributes.addFlashAttribute("swalIcon", "warning");
+                    redirectAttributes.addFlashAttribute("swalTitle", "Usuario creado");
+                    redirectAttributes.addFlashAttribute("swalText",
+                            "Se creó el usuario, pero falló el envío del correo.");
+                    return "redirect:/usuario";
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("swalIcon", "success");
+            redirectAttributes.addFlashAttribute("swalTitle", "Registrado");
+            redirectAttributes.addFlashAttribute("swalText", "Usuario creado correctamente.");
             return "redirect:/usuario";
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
+
+        } catch (HttpStatusCodeException ex) {
+            String apiMsg = ex.getResponseBodyAsString();
+            model.addAttribute("errorMessage", (apiMsg != null && !apiMsg.isBlank())
+                    ? apiMsg
+                    : ("Error al crear usuario. Status: " + ex.getStatusCode()));
+            return "UsuarioForm";
+
         } catch (Exception ex) {
-            model.addAttribute("errorMessage", ex.getMessage());
+            model.addAttribute("errorMessage", "Error: " + ex.getMessage());
             return "UsuarioForm";
         }
     }
-    
-    @PostMapping("/addDireccion")
-    public String gestionarDireccion(
-            @ModelAttribute Direccion direccion,
+   @PostMapping("/addDireccion")
+    public String gestionarDireccion(@ModelAttribute Direccion direccion,
             @RequestParam int IdUsuario,
             @RequestParam(value = "IdDireccion", required = false) Integer IdDireccion,
             @RequestParam("IdColonia") int IdColonia,
-            Model model,
+            RedirectAttributes redirectAttributes,
             HttpSession session) {
 
         String token = (String) session.getAttribute("JWT_TOKEN");
         if (token == null) {
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
         }
 
@@ -185,7 +229,7 @@ public class UsuarioPostController {
             int idDir = (IdDireccion == null ? 0 : IdDireccion);
 
             java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
-            payload.put("idDireccion", idDir); 
+            payload.put("idDireccion", idDir);
             payload.put("calle", direccion.getCalle());
             payload.put("numeroExterior", direccion.getNumeroExterior());
             payload.put("numeroInterior", direccion.getNumeroInterior());
@@ -200,10 +244,10 @@ public class UsuarioPostController {
             HttpMethod method;
 
             if (idDir == 0) {
-                url = urlBase + "api/direccion/add/" + IdUsuario;
+                url = urlBase + "api/direccion/add/" + IdUsuario; // tu endpoint ADD
                 method = HttpMethod.POST;
             } else {
-                url = urlBase + "api/usuario/" + IdUsuario + "/direccion/" + idDir;
+                url = urlBase + "api/usuario/" + IdUsuario + "/direccion/" + idDir; // tu endpoint UPDATE
                 method = HttpMethod.PUT;
             }
 
@@ -212,33 +256,52 @@ public class UsuarioPostController {
                     method,
                     entity,
                     new ParameterizedTypeReference<Result>() {
-            }
-            );
+                    });
 
-            if (!responseEntity.getStatusCode().is2xxSuccessful()
-                    || responseEntity.getBody() == null
-                    || !responseEntity.getBody().correct) {
-                String msg = (responseEntity.getBody() != null ? responseEntity.getBody().errorMessage : "No se guardó la dirección");
-                model.addAttribute("errorMessage", msg);
+            Result body = responseEntity.getBody();
+
+            if (!responseEntity.getStatusCode().is2xxSuccessful() || body == null || !body.correct) {
+                String msg = (body != null && body.errorMessage != null && !body.errorMessage.isBlank())
+                        ? body.errorMessage
+                        : "No se guardó la dirección";
+
+                redirectAttributes.addFlashAttribute("swalIcon", "error");
+                redirectAttributes.addFlashAttribute("swalTitle", "Error");
+                redirectAttributes.addFlashAttribute("swalText", msg);
+                return "redirect:/usuario/detail/?IdUsuario=" + IdUsuario;
             }
+
+            redirectAttributes.addFlashAttribute("swalIcon", "success");
+            redirectAttributes.addFlashAttribute("swalTitle", "Listo");
+            redirectAttributes.addFlashAttribute("swalText",
+                    (idDir == 0 ? "Dirección agregada correctamente" : "Dirección actualizada correctamente"));
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
         } catch (Exception ex) {
-            model.addAttribute("errorMessage", "Error: " + ex.getMessage());
+            redirectAttributes.addFlashAttribute("swalIcon", "error");
+            redirectAttributes.addFlashAttribute("swalTitle", "Error");
+            redirectAttributes.addFlashAttribute("swalText", "Error: " + ex.getMessage());
         }
 
         return "redirect:/usuario/detail/?IdUsuario=" + IdUsuario;
     }
 
     @PostMapping("update")
-    public String Update(
-            @ModelAttribute Usuario usuario,
-            @RequestParam(value = "ImagenFile", required = false) org.springframework.web.multipart.MultipartFile imagenFile,
-            HttpSession session) {
+    public String Update(@ModelAttribute Usuario usuario,
+            @RequestParam(value = "ImagenFile", required = false) MultipartFile imagenFile,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
         String token = (String) session.getAttribute("JWT_TOKEN");
         if (token == null) {
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
         }
 
@@ -247,21 +310,30 @@ public class UsuarioPostController {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(token);
-            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
             if (imagenFile != null && !imagenFile.isEmpty()) {
 
                 String contentType = imagenFile.getContentType();
                 long size = imagenFile.getSize();
-                if (contentType == null || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+
+                if (contentType == null
+                        || !(contentType.equals("image/jpeg") || contentType.equals("image/png"))) {
+                    redirectAttributes.addFlashAttribute("swalIcon", "warning");
+                    redirectAttributes.addFlashAttribute("swalTitle", "Imagen inválida");
+                    redirectAttributes.addFlashAttribute("swalText", "Solo se permite JPG o PNG.");
                     return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
                 }
+
                 if (size > 2_000_000) {
+                    redirectAttributes.addFlashAttribute("swalIcon", "warning");
+                    redirectAttributes.addFlashAttribute("swalTitle", "Imagen grande");
+                    redirectAttributes.addFlashAttribute("swalText", "Máximo 2MB.");
                     return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
                 }
 
                 byte[] bytes = imagenFile.getBytes();
-                String base64 = java.util.Base64.getEncoder().encodeToString(bytes);
+                String base64 = Base64.getEncoder().encodeToString(bytes);
                 usuario.setImagen(base64);
 
             } else {
@@ -272,7 +344,7 @@ public class UsuarioPostController {
                         HttpMethod.GET,
                         entityGet,
                         new ParameterizedTypeReference<Result<Usuario>>() {
-                });
+                        });
 
                 if (responseGet.getStatusCode().is2xxSuccessful()
                         && responseGet.getBody() != null
@@ -284,62 +356,42 @@ public class UsuarioPostController {
 
             HttpEntity<Usuario> entityPut = new HttpEntity<>(usuario, headers);
 
-            restTemplate.exchange(
+            ResponseEntity<Result> responsePut = restTemplate.exchange(
                     urlBase + "api/usuario/update/" + usuario.getIdUsuario(),
                     HttpMethod.PUT,
                     entityPut,
                     new ParameterizedTypeReference<Result>() {
-            });
+                    });
+
+            Result body = responsePut.getBody();
+
+            if (!responsePut.getStatusCode().is2xxSuccessful() || body == null || !body.correct) {
+                String msg = (body != null && body.errorMessage != null && !body.errorMessage.isBlank())
+                        ? body.errorMessage
+                        : "No se pudo actualizar el usuario";
+
+                redirectAttributes.addFlashAttribute("swalIcon", "error");
+                redirectAttributes.addFlashAttribute("swalTitle", "Error");
+                redirectAttributes.addFlashAttribute("swalText", msg);
+                return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
+            }
+
+            redirectAttributes.addFlashAttribute("swalIcon", "success");
+            redirectAttributes.addFlashAttribute("swalTitle", "Actualizado");
+            redirectAttributes.addFlashAttribute("swalText", "Usuario actualizado correctamente.");
 
         } catch (HttpClientErrorException.Unauthorized ex) {
             session.invalidate();
+            redirectAttributes.addFlashAttribute("swalIcon", "warning");
+            redirectAttributes.addFlashAttribute("swalTitle", "Sesión expirada");
+            redirectAttributes.addFlashAttribute("swalText", "Vuelve a iniciar sesión.");
             return "redirect:/login";
         } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("swalIcon", "error");
+            redirectAttributes.addFlashAttribute("swalTitle", "Error");
+            redirectAttributes.addFlashAttribute("swalText", "Error: " + ex.getMessage());
         }
 
         return "redirect:/usuario/detail/?IdUsuario=" + usuario.getIdUsuario();
     }
-
-    @PostMapping("updateDireccion")
-    public String UpdateDireccion(@ModelAttribute Direccion direccion, int IdUsuario, Model model,
-            HttpSession session) {
-
-        String token = (String) session.getAttribute("JWT_TOKEN");
-
-        if (token == null) {
-            return "redirect:/login";
-        }
-
-        RestTemplate restTemplate = new RestTemplate();
-        Result result = new Result();
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(token);
-            HttpEntity<Direccion> entity = new HttpEntity<>(direccion, headers);
-
-            ResponseEntity<Result<List<Direccion>>> responseEntity = restTemplate.exchange(urlBase,
-                    HttpMethod.PUT,
-                    entity,
-                    new ParameterizedTypeReference<Result<List<Direccion>>>() {
-            });
-
-            if (responseEntity.getStatusCode().value() == 200 || IdUsuario > 0) {
-
-                result = responseEntity.getBody();
-                model.addAttribute("direccion", result.Object);
-            }
-
-        } catch (HttpClientErrorException.Unauthorized ex) {
-            session.invalidate();
-            return "redirect:/login";
-        } catch (Exception ex) {
-            result.correct = false;
-            result.errorMessage = ex.getMessage();
-            model.addAttribute("errorMessage", result.errorMessage);
-        }
-
-        return ("redirect:/usuario/detail/?IdUsuario=" + IdUsuario);
-    }
-
 }

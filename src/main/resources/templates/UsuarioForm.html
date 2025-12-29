@@ -1,480 +1,648 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout}">
+<html lang="es"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
 
-<head>
-    <title>Ingresar Nuevo Usuario</title>
+    <head>
+        <title>Ingresar Nuevo Usuario</title>
 
-    <style>
-        .bg-soft-primary {
-            background: rgba(13, 110, 253, .08);
-        }
+        <style>
+            .bg-soft-primary {
+                background: rgba(13, 110, 253, .08);
+            }
+            .card-elev {
+                box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
+            }
+            .avatar-lg {
+                width: 120px;
+                height: 120px;
+                object-fit: cover;
+            }
+            .section-title {
+                letter-spacing: .2px;
+            }
+        </style>
+    </head>
 
-        .card-elev {
-            box-shadow: 0 12px 28px rgba(0, 0, 0, .08);
-        }
+    <body class="bg-light" layout:fragment="contenido">
 
-        .avatar-lg {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-        }
+        <div class="container my-4">
 
-        .section-title {
-            letter-spacing: .2px;
-        }
-    </style>
-</head>
+            <div class="card border-0 rounded-4 card-elev mb-4 overflow-hidden">
+                <div class="p-4 p-md-5 bg-primary text-white position-relative">
+                    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="rounded-3 p-2 bg-white bg-opacity-25 d-inline-flex">
+                                <i class="bi bi-person-plus-fill fs-3"></i>
+                            </span>
+                            <div>
+                                <h1 class="h3 fw-bold mb-1">Registro de Nuevo Usuario</h1>
+                                <p class="mb-0 opacity-75">Captura datos de cuenta, información personal y dirección.</p>
+                            </div>
+                        </div>
 
-<body class="bg-light" layout:fragment="contenido">
-
-    <div class="container my-4">
-
-        <div class="card border-0 rounded-4 card-elev mb-4 overflow-hidden">
-            <div class="p-4 p-md-5 bg-primary text-white position-relative">
-                <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-                    <div class="d-flex align-items-center gap-3">
-                        <span class="rounded-3 p-2 bg-white bg-opacity-25 d-inline-flex">
-                            <i class="bi bi-person-plus-fill fs-3"></i>
-                        </span>
-                        <div>
-                            <h1 class="h3 fw-bold mb-1">Registro de Nuevo Usuario</h1>
-                            <p class="mb-0 opacity-75">Captura datos de cuenta, información personal y dirección.</p>
-                            <input type="hidden" id="Token" name="token" th:value="${token}">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a class="btn btn-light rounded-pill fw-semibold px-4" th:href="@{/usuario}">
+                                <i class="bi bi-arrow-left me-2"></i>Volver
+                            </a>
                         </div>
                     </div>
+                </div>
 
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a class="btn btn-light rounded-pill fw-semibold px-4" th:href="@{/usuario}">
-                            <i class="bi bi-arrow-left me-2"></i>Volver
-                        </a>
+                <div class="p-3 p-md-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-4 bg-soft-primary border">
+                                <div class="d-flex align-items-center gap-2 text-primary fw-bold">
+                                    <i class="bi bi-shield-lock"></i><span>Alta de Usuario</span>
+                                </div>
+                                <div class="text-muted small mt-1">Completa los campos requeridos para registrar.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-4 bg-light border">
+                                <div class="d-flex align-items-center gap-2 fw-bold">
+                                    <i class="bi bi-person-badge text-primary"></i><span>Cuenta</span>
+                                </div>
+                                <div class="text-muted small mt-1">Username, correo y contraseña.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="p-3 rounded-4 bg-light border">
+                                <div class="d-flex align-items-center gap-2 fw-bold">
+                                    <i class="bi bi-geo-alt text-success"></i><span>Dirección</span>
+                                </div>
+                                <div class="text-muted small mt-1">Captura opcional de dirección inicial.</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="p-3 p-md-4 bg-white">
-                <div class="row g-3">
-                    <div class="col-12 col-md-4">
-                        <div class="p-3 rounded-4 bg-soft-primary border">
-                            <div class="d-flex align-items-center gap-2 text-primary fw-bold">
-                                <i class="bi bi-shield-lock"></i><span>Alta de Usuario</span>
+            <!-- ✅ FORM -->
+            <form id="frmUsuario"
+                  th:object="${usuario}"
+                  th:action="@{/usuario/add}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                  novalidate>
+
+                <!-- ✅ Token dentro del form (para JS / AJAX cascadas) -->
+                <input type="hidden" id="Token" th:value="${token}">
+
+                <div class="row g-4">
+
+                    <!-- Col izquierda -->
+                    <div class="col-lg-4 col-12">
+                        <div class="card border-0 rounded-4 card-elev h-100">
+                            <div class="card-body p-4">
+
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-image me-2"></i>Foto de perfil
+                                </h6>
+
+                                <div class="text-center mb-3">
+                                    <div class="d-inline-block border rounded-circle p-1 shadow-sm bg-white">
+                                        <img id="imgUsuarioPreview"
+                                             src="https://via.placeholder.com/140?text=Usuario"
+                                             alt="Preview"
+                                             class="rounded-circle img-fluid avatar-lg" />
+                                    </div>
+                                    <div class="text-muted small mt-2">Formatos: JPG/PNG. Recomendado: 1:1.</div>
+                                </div>
+
+                                <label for="imagenFile" class="form-label fw-semibold">Imagen de Perfil</label>
+                                <input class="form-control"
+                                       type="file"
+                                       id="imagenFile"
+                                       name="imagenFile"
+                                       accept="image/png,image/jpeg,image/jpg">
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-person-check me-2"></i>Acciones
+                                </h6>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success rounded-pill fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-2"></i>Registrar Usuario
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary rounded-pill fw-semibold">
+                                        <i class="bi bi-x-circle-fill me-2"></i>Limpiar Campos
+                                    </button>
+                                </div>
+
                             </div>
-                            <div class="text-muted small mt-1">Completa los campos requeridos para registrar.</div>
                         </div>
                     </div>
-                    <div class="col-12 col-md-4">
-                        <div class="p-3 rounded-4 bg-light border">
-                            <div class="d-flex align-items-center gap-2 fw-bold">
-                                <i class="bi bi-person-badge text-primary"></i><span>Cuenta</span>
+
+                    <!-- Col derecha -->
+                    <div class="col-lg-8 col-12">
+
+                        <!-- Cuenta -->
+                        <div class="card border-0 rounded-4 card-elev mb-4">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-key-fill me-2"></i>Datos de Cuenta
+                                </h6>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-4 col-md-6">
+                                        <label for="username" class="form-label fw-semibold">
+                                            Username <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="username"
+                                               th:field="*{UserName}"
+                                               required
+                                               placeholder="Nombre de usuario único">
+                                        <div class="form-text">Mínimo 3 caracteres. Sin espacios.</div>
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-6">
+                                        <label for="email" class="form-label fw-semibold">
+                                            Correo Electrónico <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email"
+                                               class="form-control"
+                                               id="email"
+                                               th:field="*{Email}"
+                                               required
+                                               placeholder="ejemplo@correo.com">
+                                    </div>
+
+                                    <div class="col-lg-4 col-md-12">
+                                        <label for="password" class="form-label fw-semibold">
+                                            Contraseña <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="password"
+                                               class="form-control"
+                                               id="password"
+                                               th:field="*{Password}"
+                                               required
+                                               placeholder="8-12, 1 mayúscula y 1 símbolo">
+                                        <div class="form-text">8-12 caracteres, 1 mayúscula y 1 símbolo (ej: !@#$...)</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-muted small mt-1">Username, correo y contraseña.</div>
                         </div>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <div class="p-3 rounded-4 bg-light border">
-                            <div class="d-flex align-items-center gap-2 fw-bold">
-                                <i class="bi bi-geo-alt text-success"></i><span>Dirección</span>
+
+                        <!-- Personal -->
+                        <div class="card border-0 rounded-4 card-elev mb-4">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-person-badge-fill me-2"></i>Información Personal
+                                </h6>
+
+                                <div class="row g-3 mb-1">
+                                    <div class="col-md-4">
+                                        <label for="nombre" class="form-label fw-semibold">
+                                            Nombre <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="nombre"
+                                               th:field="*{Nombre}"
+                                               required
+                                               placeholder="Tu nombre(s)">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="apellidoPaterno" class="form-label fw-semibold">
+                                            Apellido Paterno <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="apellidoPaterno"
+                                               th:field="*{ApellidoPaterno}"
+                                               required
+                                               placeholder="Apellido Paterno">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="apellidoMaterno" class="form-label fw-semibold">Apellido Materno</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="apellidoMaterno"
+                                               th:field="*{ApellidoMaterno}"
+                                               placeholder="Apellido Materno (Opcional)">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="fechaNacimiento" class="form-label fw-semibold">
+                                            Fecha de Nacimiento <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="date"
+                                               class="form-control"
+                                               id="fechaNacimiento"
+                                               th:field="*{FechaNacimiento}"
+                                               required>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="sexo" class="form-label fw-semibold">Sexo</label>
+                                        <select class="form-select" id="sexo" th:field="*{Sexo}">
+                                            <option value="" disabled selected th:if="*{Sexo == null}">Seleccione...</option>
+                                            <option value="M">Masculino</option>
+                                            <option value="F">Femenino</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="curp" class="form-label fw-semibold">
+                                            CURP <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text"
+                                               class="form-control text-uppercase"
+                                               id="curp"
+                                               maxlength="18"
+                                               th:field="*{CURP}"
+                                               required
+                                               placeholder="18 caracteres">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="text-muted small mt-1">Captura opcional de dirección inicial.</div>
                         </div>
+
+                        <!-- Contacto -->
+                        <div class="card border-0 rounded-4 card-elev mb-4">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-phone-vibrate-fill me-2"></i>Información de Contacto
+                                </h6>
+
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label for="telefono" class="form-label fw-semibold">Teléfono</label>
+                                        <input type="tel"
+                                               class="form-control"
+                                               id="telefono"
+                                               maxlength="10"
+                                               th:field="*{Telefono}"
+                                               placeholder="Ej: 5551234567">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label for="celular" class="form-label fw-semibold">Celular</label>
+                                        <input type="tel"
+                                               class="form-control"
+                                               id="celular"
+                                               maxlength="10"
+                                               th:field="*{Celular}"
+                                               placeholder="Ej: 5587654321">
+                                    </div>
+
+                                    <div class="col-md-4 col-sm-4">
+                                        <label for="pNombreRol" class="form-label fw-semibold">Rol</label>
+                                        <select class="form-select" id="pNombreRol" th:field="*{Rol.idRol}">
+                                            <option value="0" selected>Selecciona un Rol</option>
+                                            <option th:each="rol : ${roles}"
+                                                    th:value="${rol.idRol}"
+                                                    th:text="${rol.nombre}"></option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dirección -->
+                        <div class="card border-0 rounded-4 card-elev">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold text-secondary section-title mb-3">
+                                    <i class="bi bi-geo-alt-fill me-2"></i>Dirección
+                                </h6>
+
+                                <div class="p-3 rounded-4 bg-light border mb-3">
+                                    <div class="fw-semibold text-secondary">Dirección inicial</div>
+                                    <div class="text-muted small">Puedes capturarla ahora o dejarla vacía.</div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-md-4">
+                                        <label for="calle" class="form-label fw-semibold">Calle</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="calle"
+                                               th:field="*{Direcciones[0].Calle}"
+                                               placeholder="Nombre de la calle">
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label for="numeroExterior" class="form-label fw-semibold">Número Exterior</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="numeroExterior"
+                                               th:field="*{Direcciones[0].NumeroExterior}"
+                                               placeholder="Ej: 45">
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label for="numeroInterior" class="form-label fw-semibold">Número Interior</label>
+                                        <input type="text"
+                                               class="form-control"
+                                               id="numeroInterior"
+                                               th:field="*{Direcciones[0].NumeroInterior}"
+                                               placeholder="Ej: B">
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-semibold" for="ddlPais">País</label>
+                                        <select id="ddlPais"
+                                                class="form-select"
+                                                th:field="*{Direcciones[0].Colonia.Municipio.Estado.Pais.IdPais}">
+                                            <option value="0" selected>Selecciona algún País</option>
+                                            <option th:each="pais : ${paises}"
+                                                    th:value="${pais.idPais}"
+                                                    th:text="${pais.nombre}"></option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-semibold" for="ddlEstado">Estado</label>
+                                        <select id="ddlEstado"
+                                                th:field="*{Direcciones[0].Colonia.Municipio.Estado.IdEstado}"
+                                                class="form-select">
+                                            <option value="0" selected>Selecciona algún Estado</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label fw-semibold" for="ddlMunicipio">Municipio</label>
+                                        <select id="ddlMunicipio"
+                                                th:field="*{Direcciones[0].Colonia.Municipio.IdMunicipio}"
+                                                class="form-select">
+                                            <option value="0" selected>Selecciona algún Municipio</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label for="ddlColonia" class="form-label fw-semibold">Colonia</label>
+                                        <select class="form-select"
+                                                th:field="*{Direcciones[0].Colonia.IdColonia}"
+                                                id="ddlColonia">
+                                            <option value="0" selected>Seleccione una Colonia</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12 col-md-6">
+                                        <label for="ddlCodigoPostal" class="form-label fw-semibold">Código Postal</label>
+                                        <select class="form-select"
+                                                th:field="*{Direcciones[0].Colonia.CodigoPostal}"
+                                                id="ddlCodigoPostal">
+                                            <option value="0" selected>Seleccione un Código Postal</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
                 </div>
-            </div>
+
+            </form>
+
         </div>
 
-        <form th:object="${usuario}" th:action="@{/usuario/add}" method="POST" enctype="multipart/form-data" novalidate>
-
-            <div class="row g-4">
-
-                <div class="col-lg-4 col-12">
-                    <div class="card border-0 rounded-4 card-elev h-100">
-                        <div class="card-body p-4">
-
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-image me-2"></i>Foto de perfil
-                            </h6>
-
-                            <div class="text-center mb-3">
-                                <div class="d-inline-block border rounded-circle p-1 shadow-sm bg-white">
-                                    <img id="imgUsuarioPreview" src="https://via.placeholder.com/140?text=Usuario"
-                                        alt="Preview" class="rounded-circle img-fluid avatar-lg" />
-                                </div>
-                                <div class="text-muted small mt-2">Formatos: JPG/PNG. Recomendado: 1:1.</div>
-                            </div>
-
-                            <label for="imagenFile" class="form-label fw-semibold">Imagen de Perfil</label>
-                            <input class="form-control" type="file" id="imagenFile" name="imagenFile"
-                                accept="image/png,image/jpeg,image/jpg">
-
-                            <hr class="my-4">
-
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-person-check me-2"></i>Acciones
-                            </h6>
-
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success rounded-pill fw-semibold">
-                                    <i class="bi bi-check-circle-fill me-2"></i>Registrar Usuario
-                                </button>
-                                <button type="reset" class="btn btn-outline-secondary rounded-pill fw-semibold">
-                                    <i class="bi bi-x-circle-fill me-2"></i>Limpiar Campos
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-8 col-12">
-
-                    <div class="card border-0 rounded-4 card-elev mb-4">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-key-fill me-2"></i>Datos de Cuenta
-                            </h6>
-
-                            <div class="row g-3">
-                                <div class="col-lg-4 col-md-6">
-                                    <label for="username" class="form-label fw-semibold">Username <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="username" th:field="*{UserName}"
-                                        required placeholder="Nombre de usuario único">
-                                </div>
-
-                                <div class="col-lg-4 col-md-6">
-                                    <label for="email" class="form-label fw-semibold">Correo Electrónico <span
-                                            class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email" th:field="*{Email}" required
-                                        placeholder="ejemplo@correo.com">
-                                </div>
-
-                                <div class="col-lg-4 col-md-12">
-                                    <label for="password" class="form-label fw-semibold">Contraseña <span
-                                            class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" id="password" th:field="*{Password}"
-                                        required placeholder="Mínimo 8 caracteres">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card border-0 rounded-4 card-elev mb-4">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-person-badge-fill me-2"></i>Información Personal
-                            </h6>
-
-                            <div class="row g-3 mb-1">
-                                <div class="col-md-4">
-                                    <label for="nombre" class="form-label fw-semibold">Nombre <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nombre" th:field="*{Nombre}" required
-                                        placeholder="Tu nombre(s)">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="apellidoPaterno" class="form-label fw-semibold">Apellido Paterno <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="apellidoPaterno"
-                                        th:field="*{ApellidoPaterno}" required placeholder="Apellido Paterno">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="apellidoMaterno" class="form-label fw-semibold">Apellido Materno</label>
-                                    <input type="text" class="form-control" id="apellidoMaterno"
-                                        th:field="*{ApellidoMaterno}" placeholder="Apellido Materno (Opcional)">
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="fechaNacimiento" class="form-label fw-semibold">Fecha de Nacimiento
-                                        <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="fechaNacimiento"
-                                        th:field="*{FechaNacimiento}" required>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="sexo" class="form-label fw-semibold">Sexo</label>
-                                    <select class="form-select" id="sexo" th:field="*{Sexo}">
-                                        <option value="" disabled selected th:if="*{Sexo == null}">Seleccione...
-                                        </option>
-                                        <option value="M">Masculino</option>
-                                        <option value="F">Femenino</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="curp" class="form-label fw-semibold">CURP <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control text-uppercase" id="curp" maxlength="18"
-                                        th:field="*{CURP}" required placeholder="18 caracteres">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card border-0 rounded-4 card-elev mb-4">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-phone-vibrate-fill me-2"></i>Información de Contacto
-                            </h6>
-
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label for="telefono" class="form-label fw-semibold">Teléfono</label>
-                                    <input type="tel" class="form-control" id="telefono" maxlength="10"
-                                        th:field="*{Telefono}" placeholder="Ej: 5551234567">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label for="celular" class="form-label fw-semibold">Celular</label>
-                                    <input type="tel" class="form-control" id="celular" maxlength="10"
-                                        th:field="*{Celular}" placeholder="Ej: 5587654321">
-                                </div>
-
-                                <div class="col-md-4 col-sm-4">
-                                    <label for="pNombreRol" class="form-label fw-semibold">Rol</label>
-                                    <select class="form-select" id="pNombreRol" th:field="*{Rol.idRol}">
-                                        <option value="0" selected>Selecciona un Rol</option>
-                                        <option th:each="rol : ${roles}" th:value="${rol.idRol}"
-                                            th:text="${rol.nombre}"></option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card border-0 rounded-4 card-elev">
-                        <div class="card-body p-4">
-                            <h6 class="fw-bold text-secondary section-title mb-3">
-                                <i class="bi bi-geo-alt-fill me-2"></i>Dirección
-                            </h6>
-
-                            <div class="p-3 rounded-4 bg-light border mb-3">
-                                <div class="fw-semibold text-secondary">Dirección inicial</div>
-                                <div class="text-muted small">Puedes capturarla ahora o dejarla vacía.</div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-md-4">
-                                    <label for="calle" class="form-label fw-semibold">Calle</label>
-                                    <input type="text" class="form-control" id="calle"
-                                        th:field="*{Direcciones[0].Calle}" name="calle"
-                                        placeholder="Nombre de la calle">
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label for="numeroExterior" class="form-label fw-semibold">Número Exterior</label>
-                                    <input type="text" class="form-control" id="numeroExterior"
-                                        th:field="*{Direcciones[0].NumeroExterior}" name="numeroExterior"
-                                        placeholder="Ej: 45">
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label for="numeroInterior" class="form-label fw-semibold">Número Interior</label>
-                                    <input type="text" class="form-control" id="numeroInterior"
-                                        th:field="*{Direcciones[0].NumeroInterior}" name="numeroInterior"
-                                        placeholder="Ej: B">
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold" for="ddlPais">País</label>
-                                    <select id="ddlPais" name="IdPais" class="form-select"
-                                        th:field="*{Direcciones[0].Colonia.Municipio.Estado.Pais.IdPais}">
-                                        <option value="0" selected>Selecciona algún País</option>
-                                        <option th:each="pais : ${paises}" th:value="${pais.idPais}"
-                                            th:text="${pais.nombre}"></option>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold" for="ddlEstado">Estado</label>
-                                    <select id="ddlEstado"
-                                        th:field="*{Direcciones[0].colonia.municipio.estado.IdEstado}"
-                                        class="form-select">
-                                        <option value="0" selected>Selecciona algún Estado</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-md-4">
-                                    <label class="form-label fw-semibold" for="ddlMunicipio">Municipio</label>
-                                    <select id="ddlMunicipio" th:field="*{Direcciones[0].colonia.municipio.IdMunicipio}"
-                                        class="form-select">
-                                        <option value="0" selected>Selecciona algún Municipio</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-12 col-md-6">
-                                    <label for="ddlColonia" class="form-label fw-semibold">Colonia</label>
-                                    <select class="form-select" th:field="*{Direcciones[0].Colonia.IdColonia}"
-                                        id="ddlColonia">
-                                        <option value="0" selected>Seleccione una Colonia</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 col-md-6">
-                                    <label for="ddlCodigoPostal" class="form-label fw-semibold">Código Postal</label>
-                                    <select class="form-select" th:field="*{Direcciones[0].Colonia.CodigoPostal}"
-                                        id="ddlCodigoPostal">
-                                        <option value="0" selected>Seleccione un Código Postal</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-        </form>
-
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <script>
-        $(document).on("change", "#imagenFile", function () {
-            const file = this.files && this.files[0] ? this.files[0] : null;
-            if (!file) return;
-
-            const okTypes = ["image/jpeg", "image/jpg", "image/png"];
-            if (!okTypes.includes(file.type)) {
-                alert("Solo se permite JPG o PNG.");
-                $(this).val("");
-                return;
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const errorMessage = /*[[${errorMessage}]]*/ null;
+            if (errorMessage) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: errorMessage,
+                    confirmButtonColor: "#0d6efd"
+                });
             }
+            /*]]>*/
+        </script>
 
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                $("#imgUsuarioPreview").attr("src", e.target.result);
-            };
-            reader.readAsDataURL(file);
-        });
-    </script>
+        <script>
+            $(document).on("change", "#imagenFile", function () {
+                const file = this.files && this.files[0] ? this.files[0] : null;
+                if (!file)
+                    return;
 
-    <script>
-        $(document).ready(function () {
-            let token = $("#Token").val();
+                const okTypes = ["image/jpeg", "image/jpg", "image/png"];
+                if (!okTypes.includes(file.type)) {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Formato inválido",
+                        text: "Solo se permite JPG o PNG.",
+                        confirmButtonColor: "#0d6efd"
+                    });
+                    $(this).val("");
+                    return;
+                }
 
-            $("#ddlPais").change(function () {
-                $("#ddlEstado").empty().append("<option value='0' selected>Selecciona algún Estado</option>");
-                $("#ddlMunicipio").empty().append("<option value='0' selected>Selecciona algún Municipio</option>");
-                $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
-                $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
-
-                $.ajax({
-                    url:
-                        "http://localhost:8080/api/estado/pais?IdPais=" +
-                        $("#ddlPais").val(),
-                    type: "GET",
-                    dataType: "JSON",
-                    headers: { Authorization: "Bearer " + token },
-                    success: function (result) {
-                        $("#ddlEstado")
-                            .empty()
-                            .append("<option value='0' selected>Selecciona algún Estado</option>");
-                        $.each(result.Object, function (i, estado) {
-                            $("#ddlEstado").append(
-                                "<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>"
-                            );
-                        });
-                    },
-                    error: function () {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "No se pudo consultar los estados",
-                            confirmButtonColor: "#0d6efd",
-                        });
-                    },
-                });
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#imgUsuarioPreview").attr("src", e.target.result);
+                };
+                reader.readAsDataURL(file);
             });
+        </script>
 
-            $("#ddlEstado").change(function () {
-                $("#ddlMunicipio").empty().append("<option value='0' selected>Selecciona algún Municipio</option>");
-                $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
-                $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
+        <script>
+            $(document).ready(function () {
 
-                $.ajax({
-                    url:
-                        "http://localhost:8080/api/municipio/estado?IdEstado=" +
-                        $("#ddlEstado").val(),
-                    type: "GET",
-                    dataType: "JSON",
-                    headers: { Authorization: "Bearer " + token },
-                    success: function (result) {
-                        $("#ddlMunicipio")
-                            .empty()
-                            .append("<option value='0' selected>Selecciona algún Municipio</option>");
-                        $.each(result.Object, function (i, municipio) {
-                            $("#ddlMunicipio").append(
-                                "<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>"
-                            );
-                        });
-                    },
-                    error: function () {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "No se pudo consultar los municipios",
-                            confirmButtonColor: "#0d6efd",
-                        });
-                    },
+                const onlyLetters = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ\s]+$/; // letras + espacios
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+                const passRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/`~])[A-Za-z\d!@#$%^&*()_\-+={[}\]|\\:;"'<,>.?/`~]{8,12}$/;
+
+                const trimVal = (id) => ($(id).val() || "").trim();
+
+                const showError = (msg, focusId) => {
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Datos inválidos",
+                        text: msg,
+                        confirmButtonColor: "#0d6efd"
+                    }).then(() => {
+                        if (focusId)
+                            $(focusId).focus();
+                    });
+                };
+                $("#nombre, #apellidoPaterno, #apellidoMaterno").on("input", function () {
+                    this.value = this.value.replace(/[0-9]/g, "");
                 });
-            });
 
-            $("#ddlMunicipio").change(function () {
-                $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
-                $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
-
-                $.ajax({
-                    url:
-                        "http://localhost:8080/api/colonia/municipio?IdMunicipio=" +
-                        $("#ddlMunicipio").val(),
-                    type: "GET",
-                    dataType: "JSON",
-                    headers: { Authorization: "Bearer " + token },
-                    success: function (result) {
-                        $("#ddlColonia")
-                            .empty()
-                            .append("<option value='0' selected>Selecciona alguna colonia</option>");
-
-                        $("#ddlCodigoPostal")
-                            .empty()
-                            .append("<option value='0' selected>Seleccione un Código Postal</option>");
-
-                        $.each(result.Object, function (i, colonia) {
-                            $("#ddlColonia").append(
-                                "<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>"
-                            );
-                            $("#ddlCodigoPostal").append(
-                                "<option value='" + colonia.idColonia + "'>" + colonia.codigoPostal + "</option>"
-                            );
-                        });
-                    },
-                    error: function () {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Error",
-                            text: "No se pudo consultar las colonias",
-                            confirmButtonColor: "#0d6efd",
-                        }); 
-                    },
+                $("#username").on("input", function () {
+                    this.value = this.value.replace(/\s/g, "");
                 });
+
+                const getToken = () => ($("#Token").val() || "").trim();
+
+                $("#ddlPais").change(function () {
+                    const token = getToken();
+
+                    $("#ddlEstado").empty().append("<option value='0' selected>Selecciona algún Estado</option>");
+                    $("#ddlMunicipio").empty().append("<option value='0' selected>Selecciona algún Municipio</option>");
+                    $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
+                    $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
+
+                    $.ajax({
+                        url: "http://localhost:8080/api/estado/pais?IdPais=" + $("#ddlPais").val(),
+                        type: "GET",
+                        dataType: "JSON",
+                        headers: {Authorization: "Bearer " + token},
+                        success: function (result) {
+                            $("#ddlEstado").empty().append("<option value='0' selected>Selecciona algún Estado</option>");
+                            $.each(result.Object, function (i, estado) {
+                                $("#ddlEstado").append("<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>");
+                            });
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "No se pudo consultar los estados",
+                                confirmButtonColor: "#0d6efd",
+                            });
+                        }
+                    });
+                });
+
+                $("#ddlEstado").change(function () {
+                    const token = getToken();
+
+                    $("#ddlMunicipio").empty().append("<option value='0' selected>Selecciona algún Municipio</option>");
+                    $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
+                    $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
+
+                    $.ajax({
+                        url: "http://localhost:8080/api/municipio/estado?IdEstado=" + $("#ddlEstado").val(),
+                        type: "GET",
+                        dataType: "JSON",
+                        headers: {Authorization: "Bearer " + token},
+                        success: function (result) {
+                            $("#ddlMunicipio").empty().append("<option value='0' selected>Selecciona algún Municipio</option>");
+                            $.each(result.Object, function (i, municipio) {
+                                $("#ddlMunicipio").append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
+                            });
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "No se pudo consultar los municipios",
+                                confirmButtonColor: "#0d6efd",
+                            });
+                        }
+                    });
+                });
+
+                $("#ddlMunicipio").change(function () {
+                    const token = getToken();
+
+                    $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
+                    $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
+
+                    $.ajax({
+                        url: "http://localhost:8080/api/colonia/municipio?IdMunicipio=" + $("#ddlMunicipio").val(),
+                        type: "GET",
+                        dataType: "JSON",
+                        headers: {Authorization: "Bearer " + token},
+                        success: function (result) {
+                            $("#ddlColonia").empty().append("<option value='0' selected>Selecciona alguna colonia</option>");
+                            $("#ddlCodigoPostal").empty().append("<option value='0' selected>Seleccione un Código Postal</option>");
+
+                            $.each(result.Object, function (i, colonia) {
+                                $("#ddlColonia").append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
+                                $("#ddlCodigoPostal").append("<option value='" + colonia.codigoPostal + "'>" + colonia.codigoPostal + "</option>");
+                            });
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: "No se pudo consultar las colonias",
+                                confirmButtonColor: "#0d6efd",
+                            });
+                        }
+                    });
+                });
+
+                $("#frmUsuario").on("submit", function (e) {
+                    e.preventDefault();
+
+                    const nombre = trimVal("#nombre");
+                    const apPat = trimVal("#apellidoPaterno");
+                    const apMat = trimVal("#apellidoMaterno");
+                    const email = trimVal("#email");
+                    const user = trimVal("#username");
+                    const pass = $("#password").val() || "";
+
+                    if (!nombre)
+                        return showError("El nombre es obligatorio.", "#nombre");
+                    if (!onlyLetters.test(nombre))
+                        return showError("El nombre solo debe contener letras.", "#nombre");
+
+                    if (!apPat)
+                        return showError("El apellido paterno es obligatorio.", "#apellidoPaterno");
+                    if (!onlyLetters.test(apPat))
+                        return showError("El apellido paterno solo debe contener letras.", "#apellidoPaterno");
+
+                    if (apMat && !onlyLetters.test(apMat))
+                        return showError("El apellido materno solo debe contener letras.", "#apellidoMaterno");
+
+                    if (!email)
+                        return showError("El correo es obligatorio.", "#email");
+                    if (!emailRegex.test(email))
+                        return showError("Ingresa un correo válido. Ej: usuario@correo.com", "#email");
+
+                    if (!user)
+                        return showError("El username es obligatorio.", "#username");
+                    if (user.length < 3)
+                        return showError("El username debe tener al menos 3 caracteres.", "#username");
+
+                    if (!pass)
+                        return showError("La contraseña es obligatoria.", "#password");
+                    if (!passRegex.test(pass)) {
+                        return showError(
+                                "La contraseña debe tener 8 a 12 caracteres, al menos 1 mayúscula y 1 símbolo (ej: !@#$...).",
+                                "#password"
+                                );
+                    }
+
+                    const form = e.currentTarget;
+                    const $btn = $(form).find("button[type='submit']");
+
+                    Swal.fire({
+                        icon: "question",
+                        title: "¿Registrar usuario?",
+                        text: "Los datos se ven correctos. ¿Deseas continuar?",
+                        showCancelButton: true,
+                        confirmButtonText: "Sí, registrar",
+                        cancelButtonText: "Cancelar",
+                        confirmButtonColor: "#198754",
+                        cancelButtonColor: "#6c757d"
+                    }).then((r) => {
+                        if (r.isConfirmed) {
+                            $btn.prop("disabled", true);
+                            form.submit();
+                        }
+                    });
+                });
+
             });
-        });
-    </script>
+        </script>
 
-</body>
-
+    </body>
 </html>
